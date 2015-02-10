@@ -34,6 +34,14 @@ public class SpeechProcessorContext
         return;
     }
 
+    public void answer(String sentence)
+    {
+        _transition = "answer";
+        getState().answer(this, sentence);
+        _transition = "";
+        return;
+    }
+
     public void check(String sentence)
     {
         _transition = "check";
@@ -78,6 +86,14 @@ public class SpeechProcessorContext
     {
         _transition = "restart";
         getState().restart(this);
+        _transition = "";
+        return;
+    }
+
+    public void search(ISubject subject)
+    {
+        _transition = "search";
+        getState().search(this, subject);
         _transition = "";
         return;
     }
@@ -178,6 +194,11 @@ public class SpeechProcessorContext
         protected void entry(SpeechProcessorContext context) {}
         protected void exit(SpeechProcessorContext context) {}
 
+        protected void answer(SpeechProcessorContext context, String sentence)
+        {
+            Default(context);
+        }
+
         protected void check(SpeechProcessorContext context, String sentence)
         {
             Default(context);
@@ -204,6 +225,11 @@ public class SpeechProcessorContext
         }
 
         protected void restart(SpeechProcessorContext context)
+        {
+            Default(context);
+        }
+
+        protected void search(SpeechProcessorContext context, ISubject subject)
         {
             Default(context);
         }
@@ -265,6 +291,8 @@ public class SpeechProcessorContext
             new Map1_Checking("Map1.Checking", 2);
         public static final Map1_ConflictSolving ConflictSolving =
             new Map1_ConflictSolving("Map1.ConflictSolving", 3);
+        public static final Map1_Search Search =
+            new Map1_Search("Map1.Search", 4);
     }
 
     protected static class Map1_Default
@@ -307,6 +335,7 @@ public class SpeechProcessorContext
             {
                 SpeechProcessor ctxt = context.getOwner();
 
+            ctxt.logState();
             ctxt.tipGoodbye();
             return;
         }
@@ -355,12 +384,31 @@ public class SpeechProcessorContext
         }
 
         @Override
+        protected void entry(SpeechProcessorContext context)
+            {
+                SpeechProcessor ctxt = context.getOwner();
+
+            ctxt.logState();
+            return;
+        }
+
+        @Override
         protected void check(SpeechProcessorContext context, String sentence)
         {
+            SpeechProcessor ctxt = context.getOwner();
 
             (context.getState()).exit(context);
-            context.setState(Map1.Checking);
-            (context.getState()).entry(context);
+            context.clearState();
+            try
+            {
+                ctxt.tipCheck(sentence);
+            }
+            finally
+            {
+                context.setState(Map1.Checking);
+                (context.getState()).entry(context);
+            }
+
             return;
         }
 
@@ -381,6 +429,16 @@ public class SpeechProcessorContext
                 (context.getState()).entry(context);
             }
 
+            return;
+        }
+
+        @Override
+        protected void search(SpeechProcessorContext context, ISubject subject)
+        {
+
+            (context.getState()).exit(context);
+            context.setState(Map1.Search);
+            (context.getState()).entry(context);
             return;
         }
 
@@ -434,6 +492,15 @@ public class SpeechProcessorContext
         private Map1_Checking(String name, int id)
         {
             super (name, id);
+        }
+
+        @Override
+        protected void entry(SpeechProcessorContext context)
+            {
+                SpeechProcessor ctxt = context.getOwner();
+
+            ctxt.logState();
+            return;
         }
 
         @Override
@@ -549,6 +616,15 @@ public class SpeechProcessorContext
         }
 
         @Override
+        protected void entry(SpeechProcessorContext context)
+            {
+                SpeechProcessor ctxt = context.getOwner();
+
+            ctxt.logState();
+            return;
+        }
+
+        @Override
         protected void exit(SpeechProcessorContext context)
             {
             SpeechProcessor ctxt = context.getOwner();
@@ -614,6 +690,68 @@ public class SpeechProcessorContext
                 (context.getState()).entry(context);
             }
 
+            return;
+        }
+
+    //-------------------------------------------------------
+    // Member data.
+    //
+
+        //---------------------------------------------------
+        // Constants.
+        //
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static final class Map1_Search
+        extends Map1_Default
+    {
+    //-------------------------------------------------------
+    // Member methods.
+    //
+
+        private Map1_Search(String name, int id)
+        {
+            super (name, id);
+        }
+
+        @Override
+        protected void entry(SpeechProcessorContext context)
+            {
+                SpeechProcessor ctxt = context.getOwner();
+
+            ctxt.logState();
+            return;
+        }
+
+        @Override
+        protected void answer(SpeechProcessorContext context, String sentence)
+        {
+            SpeechProcessor ctxt = context.getOwner();
+
+            (context.getState()).exit(context);
+            context.clearState();
+            try
+            {
+                ctxt.tipAnswer(sentence);
+            }
+            finally
+            {
+                context.setState(Map1.Normal);
+                (context.getState()).entry(context);
+            }
+
+            return;
+        }
+
+        @Override
+        protected void standby(SpeechProcessorContext context)
+        {
+
+            (context.getState()).exit(context);
+            context.setState(Map1.StandBy);
+            (context.getState()).entry(context);
             return;
         }
 

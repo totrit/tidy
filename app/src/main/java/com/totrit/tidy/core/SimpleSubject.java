@@ -2,15 +2,18 @@ package com.totrit.tidy.core;
 
 import android.os.Parcel;
 
+import com.iflytek.cloud.Setting;
 import com.totrit.tidy.Utils;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Created by totrit on 2015/2/1.
  */
-class SimpleSubject extends ISubject{
+class SimpleSubject extends ISubject implements Serializable{
+    private final static String LOG_TAG = "SimpleSubject";
     private String mName;
     private Set<String> mAttributes;
     private ISubject mFather;
@@ -31,11 +34,11 @@ class SimpleSubject extends ISubject{
         }
         boolean ret = father.mInnerSubjects.add(this);
         if (mFather != null) {
-            Utils.log("placedInto, current-subject=" + this + ", previous-father=" + mFather + ", new-father=" + father);
+            Utils.d(LOG_TAG, "placedInto, current-subject=" + this + ", previous-father=" + mFather + ", new-father=" + father);
             ((SimpleSubject)mFather).mInnerSubjects.remove(this);
         }
         mFather = father;
-        Utils.log("placedInto, son=" + this + ", father=" + another);
+        Utils.d(LOG_TAG, "placedInto, son=" + this + ", father=" + another);
         return ret;
     }
 
@@ -70,5 +73,10 @@ class SimpleSubject extends ISubject{
     @Override
     public String toString() {
         return mName;
+    }
+
+    @Override
+    public int hashCode() {
+        return mName.hashCode();
     }
 }

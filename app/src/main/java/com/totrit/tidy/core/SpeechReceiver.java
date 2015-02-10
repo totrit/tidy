@@ -55,7 +55,7 @@ public class SpeechReceiver {
 
         @Override
         public void onError(SpeechError error) {
-            Utils.showTip(error.getPlainDescription(true));
+            SpeechReceiver.this.startReceiving();
         }
 
         @Override
@@ -71,12 +71,11 @@ public class SpeechReceiver {
             if (!isLast) {
                 mWholeSentence += text;
             } else {
-                Intent intent = new Intent();
-                intent.setAction("com.totrit.ACTION_DISPLAY");
-//                intent.putExtra("orig-data", results.getResultString());
-                intent.putExtra("parsed-data", mWholeSentence);
-                ApplicationImpl.getGlobalContext().sendBroadcast(intent);
+                mWholeSentence += text;
                 mHandler.onReceive(mWholeSentence);
+                if (!TTS.getInstance().isSpeaking()) {
+                    SpeechReceiver.this.startReceiving();
+                }
                 mWholeSentence = "";
             }
         }

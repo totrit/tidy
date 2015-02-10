@@ -11,5 +11,5 @@ abstract class SubjectAbstractFactory {
     public abstract Pair<ISubject, ISubject> createObject(String statement);
     public abstract Collection<ISubject> similarSubjects(ISubject comparing,
                                                          double subjectSimilarityThreshold);
-    public abstract void saveSubject(ISubject subject);
+    public abstract void putSubject(ISubject subject, ISubject container);
 }

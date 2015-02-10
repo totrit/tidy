@@ -1,6 +1,5 @@
 package com.totrit.tidy.core;
 
-import android.util.Log;
 import android.util.Pair;
 
 import com.totrit.tidy.Utils;
@@ -14,7 +13,7 @@ import java.util.Set;
  * Created by totrit on 2015/1/31.
  */
 class SpeechProcessor implements ISpeechCallback {
-    private final static String LOG_TAG = "SpeechHandlerImpl";
+    private final static String LOG_TAG = "SpeechProcessor";
     private SpeechProcessorContext mFSM;
     private SubjectAbstractFactory mSubjectsFactory = new SubjectSimpleFactory();
     private Pair<ISubject, ISubject> mProvisionalInstruction;
@@ -30,9 +29,10 @@ class SpeechProcessor implements ISpeechCallback {
     @Override
     public int onReceive(String sentence) {
         if (sentence == null || sentence.length() < 2) {
-            Log.e(LOG_TAG, "sentence too short, skip.");
+            Utils.e(LOG_TAG, "sentence too short, skip.");
             return 0;
         }
+        Utils.d(LOG_TAG, "onReceive, sentence=" + sentence);
         sentence = sentence.substring(0, sentence.length() - "。".length());
         if (checkStandby(sentence)) {
             mFSM.standby();
@@ -47,9 +47,9 @@ class SpeechProcessor implements ISpeechCallback {
                 break;
             }
             case 1: { // Normal
-                int tryResult = tryAbstractSubjectAndPlace(sentence);
+                int tryResult = judgeSentenceType(sentence);
                 if (tryResult == 0) {
-                    mFSM.check(sentence);
+                    mFSM.check("你是说" + mProvisionalInstruction.first + "被搞到" + mProvisionalInstruction.second + "了吗？");
                 } else if (tryResult == -1) {
                     mFSM.unexpectedAnswer();
                 } else if (tryResult == -2) {
@@ -66,12 +66,12 @@ class SpeechProcessor implements ISpeechCallback {
             }
             case 2: { // Checking
                 if (checkWhetherResetCommand(sentence)) {
-                    Utils.log("reset-cmd=true");
+                    Utils.d(LOG_TAG, "reset-cmd=true");
                     mFSM.restart();
                     break;
                 }
                 int answerType = answerType(sentence);
-                Utils.log(sentence + ", answer-type=" + answerType);
+                Utils.d(LOG_TAG, sentence + ", answer-type=" + answerType);
                 if (answerType == 1) {
                     mFSM.ok();
                 } else if (answerType == -1) {
@@ -83,12 +83,12 @@ class SpeechProcessor implements ISpeechCallback {
             }
             case 3: { // ConflictResolving
                 if (checkWhetherResetCommand(sentence)) {
-                    Utils.log("reset=true, state=" + mFSM.getState());
+                    Utils.d(LOG_TAG, "reset=true, state=" + mFSM.getState());
                     mFSM.restart();
                     break;
                 }
                 int answerType = answerType(sentence);
-                Utils.log("answer-type=" + answerType + ", state=" + mFSM.getState());
+                Utils.d(LOG_TAG, "answer-type=" + answerType + ", state=" + mFSM.getState());
                 if (answerType == 1) {
                     if (mConflictingPart == 0) {
                         mFSM.replace(mProvisionalInstruction.first, mConflictingSubjects.iterator().next());
@@ -103,7 +103,7 @@ class SpeechProcessor implements ISpeechCallback {
                 break;
             }
             default: {
-                Utils.log("ERROR! state=" + mFSM.getState());
+                Utils.d(LOG_TAG, "ERROR! state=" + mFSM.getState());
                 break;
             }
         }
@@ -127,12 +127,19 @@ class SpeechProcessor implements ISpeechCallback {
 
     /**
      * @param sentence
-     * @return 0   :the sentence is acceptable
+     * @return 0   :the sentence is an insert instruction
+     * 1    : the sentence is a query instruction
      * -1  : sentence is in wrong format, can not recognize
      * -2   : the subject or the placedInto may have conflicts;
      *
      */
-    private int tryAbstractSubjectAndPlace(String sentence) {
+    private int judgeSentenceType(String sentence) {
+        final String KEYWORD_QUERY = "在哪里";
+        int queryIndex = sentence.indexOf(KEYWORD_QUERY);
+        if (queryIndex != null) {
+
+        }
+        if (sentence.contains(KEYWORD_QUERY))
         final double SIMILARITY_THRESHOLD = 0.9;
         mProvisionalInstruction = mSubjectsFactory.createObject(sentence);
         if (mProvisionalInstruction != null) {
@@ -168,34 +175,39 @@ class SpeechProcessor implements ISpeechCallback {
     }
 
     void tipGoodbye() {
-        Utils.log("goodbye.");
+        Utils.d(LOG_TAG, "goodbye.");
         TTS.getInstance().speak("暂停接受指令，如需重新开始，请讲开始指令");
     }
 
     void tipWelcome() {
-        Utils.log("welcome.");
+        Utils.d(LOG_TAG, "welcome.");
         TTS.getInstance().speak("您好，请您以什么放到什么里这样的句式来给出指令");
     }
 
+    void tipCheck(String toRepeat) {
+        TTS.getInstance().speak(toRepeat);
+    }
+
     void saveProvisional() {
-        Utils.log("save item, subject=" + mProvisionalInstruction.first + ", place=" + mProvisionalInstruction.second);
-        mProvisionalInstruction.first.placedInto(mProvisionalInstruction.second);
+        Utils.d(LOG_TAG, "save item, subject=" + mProvisionalInstruction.first + ", place=" + mProvisionalInstruction.second);
+        mSubjectsFactory.putSubject(mProvisionalInstruction.first, mProvisionalInstruction.second);
+        TTS.getInstance().speak("收到!");
     }
 
     void discardProvisional() {
-        Utils.log("discardProvisional");
+        Utils.d(LOG_TAG, "discardProvisional");
         mProvisionalInstruction = null;
         mConflictingPart = -1;
         mConflictingPlaces = mConflictingSubjects = null;
     }
 
     void tipUnexpectedAnswer() {
-        Utils.log("tipUnexpectedAnswer");
+        Utils.d(LOG_TAG, "tipUnexpectedAnswer");
         TTS.getInstance().speak("请您再说一遍");
     }
 
     void trySolve(ISubject newSubject, ISubject existingSubject) {
-        Utils.log("trySolve, newOne=" + newSubject + ", existing=" + existingSubject);
+        Utils.d(LOG_TAG, "trySolve, newOne=" + newSubject + ", existing=" + existingSubject);
         TTS.getInstance().speak("您是指之前说过的" + existingSubject + "吗？");
     }
 
@@ -206,8 +218,8 @@ class SpeechProcessor implements ISpeechCallback {
         } else if (mConflictingPart == 1) {
             place = mConflictingPlaces.iterator().next();
         }
-        Utils.log("changeAndSaveProvisional, conflicting=" + mConflictingPart + ", existing=" + existingSubject + ", newOne=" + newSubject);
-        subject.placedInto(place);
+        Utils.d(LOG_TAG, "changeAndSaveProvisional, conflicting=" + mConflictingPart + ", existing=" + existingSubject + ", newOne=" + newSubject);
+        mSubjectsFactory.putSubject(subject, place);
     }
 
     void tipStartOver() {
@@ -217,5 +229,17 @@ class SpeechProcessor implements ISpeechCallback {
     void endOfConflict() {
         mConflictingPart = -1;
         mConflictingPlaces = mConflictingSubjects = null;
+    }
+
+    void logState() {
+        Utils.d(LOG_TAG, "state switched to " + mFSM.getState());
+    }
+
+    void tipAnswer(String sentence) {
+        TTS.getInstance().speak(sentence);
+    }
+
+    void readyForInstruction() {
+        mProvisionalInstruction = null;
     }
 }

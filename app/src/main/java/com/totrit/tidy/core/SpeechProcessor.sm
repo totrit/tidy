@@ -47,6 +47,7 @@
 StandBy
 Entry
 {
+                logState();
                 tipGoodbye();
 }
 {
@@ -54,14 +55,24 @@ Entry
 }
 
 Normal
+Entry
+{
+                logState();
+                readyForInstruction();
+}
 {
 				standby			StandBy			{}
-				check(sentence: String)			Checking		{}
+				check(sentence: String)			Checking		{ tipCheck(sentence); }
 				conflict(later: ISubject, before: ISubject)   ConflictSolving { trySolve(later, before); }
+				search(subject: ISubject) Search {}
 				unexpectedAnswer nil            { tipUnexpectedAnswer(); }
 }
 
 Checking
+Entry
+{
+                logState();
+}
 {
 				ok			    Normal			{saveProvisional();}
 				wrong		    Normal			{discardProvisional();}
@@ -71,6 +82,10 @@ Checking
 }
 
 ConflictSolving
+Entry
+{
+                logState();
+}
 Exit
 {
                 endOfConflict();
@@ -81,4 +96,14 @@ Exit
                 unexpectedAnswer Normal         { tipStartOver(); }
 }
 
+// query
+Search
+Entry
+{
+                logState();
+}
+{
+                standby			StandBy			{}
+                answer(sentence: String) Normal   { tipAnswer(sentence); }
+}
 %%

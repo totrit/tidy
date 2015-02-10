@@ -10,6 +10,7 @@ import android.widget.Toast;
  */
 public class Utils {
     private final static String COMMON_SP = "common";
+    private final static boolean LOG_ENABLED = true;
     private static Toast sToast;
     private static SharedPreferences sCommonSharedPreferences;
 
@@ -28,9 +29,15 @@ public class Utils {
         return sCommonSharedPreferences;
     }
 
-    public static void log(String msg) {
-        Intent i = new Intent("com.totrit.ACTION_DISPLAY");
-        i.putExtra("log", msg);
-        ApplicationImpl.getGlobalContext().sendBroadcast(i);
+    public static void d(String tag, String msg) {
+        if (LOG_ENABLED) {
+            android.util.Log.d(tag, msg);
+        }
+    }
+
+    public static void e(String tag, String msg) {
+        if (LOG_ENABLED) {
+            android.util.Log.e(tag, msg);
+        }
     }
 }

@@ -32,41 +32,37 @@ public class TTS {
     private String voicer = "xiaoyan";
     private int mPercentForBuffering = 0;
     private int mPercentForPlaying = 0;
+    private volatile boolean mIsSpeaking = false;
     private SynthesizerListener mTtsListener = new SynthesizerListener() {
         @Override
         public void onSpeakBegin() {
-//            Utils.showTip("开始播放");
         }
 
         @Override
         public void onSpeakPaused() {
-//            Utils.showTip("暂停播放");
         }
 
         @Override
         public void onSpeakResumed() {
-//            Utils.showTip("继续播放");
         }
 
         @Override
         public void onBufferProgress(int percent, int beginPos, int endPos,
                                      String info) {
             mPercentForBuffering = percent;
-//            Utils.showTip(String.format("缓冲进度为%d，播放进度为%d",
-//                    mPercentForBuffering, mPercentForPlaying));
         }
 
         @Override
         public void onSpeakProgress(int percent, int beginPos, int endPos) {
             mPercentForPlaying = percent;
-//            Utils.showTip(String.format("缓冲进度为%d，播放进度为%d",
-//                    mPercentForBuffering, mPercentForPlaying));
         }
 
         @Override
         public void onCompleted(SpeechError error) {
+            synchronized (TTS.this) {
+                TTS.this.mIsSpeaking = false;
+            }
             if (error == null) {
-//                Utils.showTip("播放完成");
                 SpeechReceiver.getInstance().startReceiving();
             } else if (error != null) {
                 Utils.showTip(error.getPlainDescription(true));
@@ -91,13 +87,18 @@ public class TTS {
         return sInstance;
     }
 
+    public synchronized boolean isSpeaking() {
+        return mIsSpeaking;
+    }
     public void notifySettingMayChanged() {
         initParams();
     }
 
     public int speak(String msg) {
         mTts.stopSpeaking();
-
+        synchronized (TTS.this) {
+            TTS.this.mIsSpeaking = false;
+        }
         int code = mTts.startSpeaking(msg, mTtsListener);
         if (code != ErrorCode.SUCCESS) {
             if (code == ErrorCode.ERROR_COMPONENT_NOT_INSTALLED) {
