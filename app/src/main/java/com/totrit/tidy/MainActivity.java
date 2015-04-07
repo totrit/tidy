@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,35 +16,24 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.totrit.tidy.core.SpeechReceiver;
+import com.totrit.tidy.ui.MainView;
+import com.totrit.tidy.ui.NewItemDialog;
 
 
-public class MainActivity extends Activity {
-    TextView mDisplay;
-    private SpeechReceiver mSpeechReceiver;
-    private BroadcastReceiver mSpeechListener = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String log = intent.getStringExtra("log");
-            String output = mDisplay.getText() + "\n" + log;
-            mDisplay.setText(output);
-        }
-    };
+public class MainActivity extends android.support.v7.app.ActionBarActivity {
 
+    private MainView mListView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+            this.getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, mListView = new MainView())
                     .commit();
         }
-        mSpeechReceiver = SpeechReceiver.getInstance();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("com.totrit.ACTION_DISPLAY");
-        this.registerReceiver(mSpeechListener, filter);
-        mSpeechReceiver.startReceiving();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowCustomEnabled(true);
     }
 
     @Override
@@ -63,32 +53,23 @@ public class MainActivity extends Activity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if (id == R.id.action_new_entity) {
+            Intent newDialog = new Intent();
+            newDialog.setClass(this, NewItemDialog.class);
+            this.startActivityForResult(newDialog, 0);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public /*static*/ class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            Button btnStart = (Button) rootView.findViewById(R.id.button_start);
-            btnStart.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    MainActivity.this.mSpeechReceiver.startReceiving();
-                }
-            });
-            mDisplay = (TextView) rootView.findViewById(R.id.textView);
-            return rootView;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if (requestCode == 0){
+            if (resultCode == 1) {
+                String description = data.getStringExtra(Constants.BUNDLE_KEY_DESCRIPTION);
+                String picPath = data.getStringExtra(Constants.BUNDLE_KEY_PIC_PATH);
+            }
         }
     }
+
 }

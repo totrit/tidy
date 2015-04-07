@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView android:id="@+id/list_item_title"
+        android:layout_width="@dimen/list_item_title_layout_width"
+        android:layout_height="@dimen/list_item_title_layout_height" />
+    <ImageView android:id="@+id/list_item_image"
+        android:layout_width="@dimen/list_item_image_layout_with"
+        android:layout_height="@dimen/list_item_image_layout_height"
+        android:layout_toRightOf="@+id/list_item_title"/>
+</RelativeLayout>

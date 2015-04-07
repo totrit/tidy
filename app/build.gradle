@@ -1,20 +1,20 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 20
-    buildToolsVersion "20.0.0"
+    compileSdkVersion 21
+    buildToolsVersion '21.1.2'
 
     defaultConfig {
         applicationId "com.totrit.tidy"
-        minSdkVersion 15
-        targetSdkVersion 20
+        minSdkVersion 8
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
     }
 
     signingConfigs {
         release {
-            storeFile file("d:\\urgent-files-from-fedora\\totrit.keystore")
+            storeFile file("~/work/totrit.keystore")
             storePassword "nihaoa"
             keyAlias "totrit"
             keyPassword "nihaoa"
@@ -30,6 +30,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/statemap.jar')
+    compile 'com.android.support:recyclerview-v7:21.0.0'
+    compile 'com.android.support:support-v4:21.0.0'
+    compile "com.android.support:appcompat-v7:21.0.+"
 }
