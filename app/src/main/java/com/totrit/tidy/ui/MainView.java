@@ -6,14 +6,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
-import com.totrit.tidy.core.Entity;
+import com.totrit.tidy.core.model.Entity;
 import com.totrit.tidy.core.EntityManager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,11 +22,11 @@ public class MainView extends android.support.v4.app.Fragment {
     private RecyclerView mRecyclerView;
     private MainListAdapter mAdapter;
 
-    static MainView createInstance(int entityId) {
+    static MainView createInstance(long entityId) {
         MainView newFrag = new MainView();
 
         Bundle args = new Bundle();
-        args.putInt("id", entityId);
+        args.putLong("id", entityId);
         newFrag.setArguments(args);
 
         return newFrag;
@@ -45,7 +43,7 @@ public class MainView extends android.support.v4.app.Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this.getActivity()));
         mRecyclerView.setHasFixedSize(true);
 
-        int id = this.getArguments().getInt("id", -1);
+        long id = this.getArguments().getLong("id", -1);
         Utils.d(LOG_TAG, "creating new Fragment for entity " + id);
         EntityManager.getInstance().asyncFetchContained(id, new EntityManager.IContainedObjectsFetchCallback() {
             @Override

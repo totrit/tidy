@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.totrit.tidy.R;
 import com.totrit.tidy.core.Communicator;
-import com.totrit.tidy.core.Entity;
+import com.totrit.tidy.core.model.Entity;
 
 import java.util.List;
 

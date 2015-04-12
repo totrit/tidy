@@ -10,7 +10,7 @@ import com.totrit.tidy.Constants;
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
 import com.totrit.tidy.core.Communicator;
-import com.totrit.tidy.core.Entity;
+import com.totrit.tidy.core.model.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,7 +100,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         newFragment(entity.getId());
     }
 
-    private void newFragment(int id) {
+    private void newFragment(long id) {
         MainView newFragment = MainView.createInstance(id);
         android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.setCustomAnimations(R.anim.fragment_push_in, R.anim.fragment_push_out, R.anim.fragment_pop_in, R.anim.fragment_pop_out);

@@ -1,6 +1,7 @@
 package com.totrit.tidy.core;
 
 import com.totrit.tidy.Utils;
+import com.totrit.tidy.core.model.Entity;
 import com.totrit.tidy.ui.MainActivity;
 
 /**

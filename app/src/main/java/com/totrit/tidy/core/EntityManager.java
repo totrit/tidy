@@ -1,5 +1,8 @@
 package com.totrit.tidy.core;
 
+import com.totrit.tidy.Utils;
+import com.totrit.tidy.core.model.Entity;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -13,6 +16,7 @@ import java.util.concurrent.TimeUnit;
  * Created by maruilin on 15/4/6.
  */
 public class EntityManager {
+    private final static String LOG_TAG = "EntityManager";
     ExecutorService mExecutor = null;
     private static EntityManager sInstance = null;
 
@@ -33,7 +37,6 @@ public class EntityManager {
         mExecutor = new ThreadPoolExecutor(1, 2, 30, TimeUnit.SECONDS, new LinkedBlockingQueue());
     }
 
-
     public List<Entity> queryCandidates(String description) {
         //TODO
         return null;
@@ -44,7 +47,7 @@ public class EntityManager {
     }
 
     Future mLastScheduledTask = null;
-    public void asyncFetchContained(final int containerId, final IContainedObjectsFetchCallback uiCallback) {
+    public void asyncFetchContained(final long containerId, final IContainedObjectsFetchCallback uiCallback) {
         // cancel the previous task
         if (mLastScheduledTask != null) {
             mLastScheduledTask.cancel(true);
@@ -67,11 +70,14 @@ public class EntityManager {
         public void containedFetched(List<Entity> children);
     }
 
-    private List<Entity> internalGetContained(int containerId) {
+    private List<Entity> internalGetContained(long containerId) {
         // TODO
         ArrayList<Entity> tmpDataset = new ArrayList<Entity>(3);
-        for (int i = containerId * 100 + 0; i < containerId * 100 + 10; i ++) {
-            tmpDataset.add(new Entity(i, "测试" + i, null));
+        for (long i = containerId * 100 + 0; i < containerId * 100 + 10; i ++) {
+            Entity newEntity = new Entity("测试" + i, null);
+            newEntity.save();
+            Utils.d(LOG_TAG, "entity created: " + newEntity);
+            tmpDataset.add(newEntity);
         }
         return tmpDataset;
 //        return null;
