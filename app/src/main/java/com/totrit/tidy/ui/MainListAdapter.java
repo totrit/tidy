@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.totrit.tidy.R;
+import com.totrit.tidy.core.Communicator;
 import com.totrit.tidy.core.Entity;
 
 import java.util.List;
@@ -21,9 +22,15 @@ class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHolder> {
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public ViewHolder(View v) {
             super(v);
+            v.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Communicator.getInstance().notifyMainListItemClicked(mDataSet.get(this.getPosition()));
         }
     }
 
@@ -61,4 +68,5 @@ class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHolder> {
     public int getItemCount() {
         return mDataSet.size();
     }
+
 }
