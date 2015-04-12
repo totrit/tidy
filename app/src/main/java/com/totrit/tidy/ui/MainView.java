@@ -54,6 +54,7 @@ public class MainView extends android.support.v4.app.Fragment {
 
                 mAdapter.setData(children);
                 mRecyclerView.setAdapter(mAdapter);
+                mAdapter.notifyDataSetChanged();
             }
         });
         return rootView;

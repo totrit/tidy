@@ -1,11 +1,8 @@
 package com.totrit.tidy.ui;
 
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -23,68 +20,44 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
     private final static String LOG_TAG = "MainActivity";
     private List<MainView> mListViews = new ArrayList<>();
 
-    private ViewPager mPager;
-    private PagerAdapter mPagerAdapter;
-    private int mCurrentPageIndex = 0;
+    private int mCurrentDepth = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.list_view_pager);
-        mPager = (ViewPager) findViewById(R.id.pager);
-        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-        mPager.setAdapter(mPagerAdapter);
+        setContentView(R.layout.activity_main);
+        Communicator.getInstance().registerMainActivity(this);
         newFragment(0);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
-        mPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if (position < mCurrentPageIndex) {
-                    Utils.d(LOG_TAG, "page changed to " + position);
-                    deleteUnnecessaryPages();
-                }
-                mCurrentPageIndex = position;
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-            }
-        });
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Communicator.getInstance().registerMainActivity(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
+    public void onDestroy() {
+        super.onDestroy();
         Communicator.getInstance().unregisterMainActivity();
     }
 
     @Override
     public void onBackPressed() {
-        if (mPager.getCurrentItem() == 0) {
-            // If the user is currently looking at the first step, allow the system to handle the
-            // Back button. This calls finish() on this activity and pops the back stack.
-            super.onBackPressed();
-        } else {
-            // Otherwise, select the previous step.
-            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
+        if (goBack()) {
+            finish();
         }
     }
 
-    private void deleteUnnecessaryPages() {
-        Utils.d(LOG_TAG, "deleting unnecessary page " + (mPager.getCurrentItem() + 1));
-        mListViews.remove(mPager.getCurrentItem() + 1);
-        mPagerAdapter.notifyDataSetChanged();
+    /*
+    return true if end of stack
+     */
+    private boolean goBack() {
+        Utils.d(LOG_TAG, "deleting unnecessary page " + mCurrentDepth);
+        if (mListViews.size() <= 1) {
+            mListViews.clear();
+            return true;
+        }
+        getSupportFragmentManager().popBackStack();
+        mListViews.remove(mCurrentDepth);
+        mCurrentDepth --;
+        return false;
     }
 
     @Override
@@ -123,35 +96,20 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         }
     }
 
-    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
-        public ScreenSlidePagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public android.support.v4.app.Fragment getItem(int position) {
-            return mListViews.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return mListViews.size();
-        }
-    }
-
     public void onListItemClicked(Entity entity) {
         newFragment(entity.getId());
     }
 
     private void newFragment(int id) {
-        MainView newFrag = MainView.createInstance(id);
-        if (mPager.getCurrentItem() < mListViews.size() - 1) {
-            mListViews.set(mPager.getCurrentItem() + 1, newFrag);
-        } else {
-            mListViews.add(newFrag);
-        }
-        mPagerAdapter.notifyDataSetChanged();
-        mPager.setCurrentItem(mPager.getCurrentItem() + 1, true);
+        MainView newFragment = MainView.createInstance(id);
+        android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.setCustomAnimations(R.anim.fragment_push_in, R.anim.fragment_push_out, R.anim.fragment_pop_in, R.anim.fragment_pop_out);
+        ft.replace(R.id.frag_area, newFragment);
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        ft.addToBackStack(null);
+        ft.commit();
+        mListViews.add(newFragment);
+        mCurrentDepth ++;
     }
 
 }
