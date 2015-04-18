@@ -22,4 +22,11 @@ public class Utils {
             android.util.Log.e(tag, msg);
         }
     }
+
+    public static void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignore) {
+        }
+    }
 }

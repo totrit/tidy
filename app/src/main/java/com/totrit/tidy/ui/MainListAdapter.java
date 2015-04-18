@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.totrit.tidy.R;
 import com.totrit.tidy.core.Communicator;
-import com.totrit.tidy.core.model.Entity;
+import com.totrit.tidy.core.Entity;
 
 import java.util.List;
 
@@ -18,6 +18,7 @@ import java.util.List;
  */
 class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHolder> {
     private List<Entity> mDataSet;
+    private long mHightlightId;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -36,6 +37,10 @@ class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHolder> {
 
     public void setData(List<Entity> dataset) {
         mDataSet = dataset;
+    }
+
+    public void setHightlight(long id) {
+        mHightlightId = id;
     }
 
     // Create new views (invoked by the layout manager)
@@ -59,6 +64,10 @@ class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHolder> {
         TextView title = (TextView) wholeItem.findViewById(R.id.list_item_title);
         ImageView thumb = (ImageView) wholeItem.findViewById(R.id.list_item_image);
         title.setText(mDataSet.get(position).getDescription());
+        if (mDataSet.get(position).getEntityId() == mHightlightId) {
+            wholeItem.setPressed(true);
+            setHightlight(-1);
+        }
         //TODO
         thumb.setImageResource(R.drawable.ic_launcher);
     }

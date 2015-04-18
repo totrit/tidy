@@ -2,8 +2,13 @@
     xmlns:tidy="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
-    <item android:id="@+id/action_new_entity"
-        android:title="+"
+    <item android:id="@+id/action_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/action_search"
+        tidy:showAsAction="ifRoom" />
+    <item android:id="@+id/action_new"
+        android:icon="@drawable/ic_new_item"
+        android:title="@string/action_new"
         tidy:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_settings"

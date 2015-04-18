@@ -1,16 +1,15 @@
 package com.totrit.tidy.ui;
 
 import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.totrit.tidy.Constants;
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
 import com.totrit.tidy.core.Communicator;
-import com.totrit.tidy.core.model.Entity;
+import com.totrit.tidy.core.Entity;
+import com.totrit.tidy.core.EntityManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +20,25 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
     private List<MainView> mListViews = new ArrayList<>();
 
     private int mCurrentDepth = -1;
+    private SearchActivity.SearchResult mSearchResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Communicator.getInstance().registerMainActivity(this);
-        newFragment(0);
+        newFragment(0, -1);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mSearchResult != null && mSearchResult.selectedId != -1 && mSearchResult.containerId != -1) {
+            newFragment(mSearchResult.containerId, mSearchResult.selectedId);
+        }
+        mSearchResult = null;
     }
 
     @Override
@@ -77,31 +86,36 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        } else if (id == R.id.action_new_entity) {
-            Intent newDialog = new Intent();
-            newDialog.setClass(this, NewItemDialog.class);
-            this.startActivityForResult(newDialog, 0);
+        } else if (id == R.id.action_search) {
+            SearchActivity.startActivity(this, false, mSearchActivityCallback);
+        }else if (id == R.id.action_new) {
+            //TODO
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if (requestCode == 0){
-            if (resultCode == 1) {
-                String description = data.getStringExtra(Constants.BUNDLE_KEY_DESCRIPTION);
-                String picPath = data.getStringExtra(Constants.BUNDLE_KEY_PIC_PATH);
-            }
+    private SearchActivity.ISearchCallback mSearchActivityCallback = new SearchActivity.ISearchCallback() {
+        @Override
+        public void onEnd(SearchActivity.SearchResult result) {
+            Utils.d(LOG_TAG, "result from SearchActivity: " + result);
+            mSearchResult = result;
         }
-    }
+    };
+
+    private EntityManager.IItemInfoQueryCallback mItemInfoQueryCallback = new EntityManager.IItemInfoQueryCallback() {
+        @Override
+        public void dataFetched(Entity entity) {
+            getSupportActionBar().setTitle(entity.getDescription());
+        }
+    };
 
     public void onListItemClicked(Entity entity) {
-        newFragment(entity.getId());
+        newFragment(entity.getEntityId(), -1);
     }
 
-    private void newFragment(long id) {
-        MainView newFragment = MainView.createInstance(id);
+    private void newFragment(long id, long highlight) {
+        MainView newFragment = MainView.createInstance(id, highlight);
         android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.setCustomAnimations(R.anim.fragment_push_in, R.anim.fragment_push_out, R.anim.fragment_pop_in, R.anim.fragment_pop_out);
         ft.replace(R.id.frag_area, newFragment);
@@ -110,6 +124,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         ft.commit();
         mListViews.add(newFragment);
         mCurrentDepth ++;
+        EntityManager.getInstance().asyncQueryItemInfo(id, mItemInfoQueryCallback);
     }
 
 }

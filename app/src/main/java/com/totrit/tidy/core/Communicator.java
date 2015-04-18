@@ -1,7 +1,8 @@
 package com.totrit.tidy.core;
 
+import android.content.Context;
+
 import com.totrit.tidy.Utils;
-import com.totrit.tidy.core.model.Entity;
 import com.totrit.tidy.ui.MainActivity;
 
 /**
@@ -11,6 +12,7 @@ public class Communicator {
     private final static String LOG_TAG = "Communicator";
     private MainActivity mMainActivity;
     private static Communicator sInstance = null;
+    private Context mGlobalContext;
 
     public static Communicator getInstance() {
         if (sInstance != null) {
@@ -26,6 +28,11 @@ public class Communicator {
 
     public void registerMainActivity(MainActivity mainActivity) {
         mMainActivity = mainActivity;
+        mGlobalContext = mainActivity.getApplicationContext();
+    }
+
+    public Context getContext() {
+        return mGlobalContext;
     }
 
     public void unregisterMainActivity() {

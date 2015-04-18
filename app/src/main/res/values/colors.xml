@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="text_highlight_color" type="color">#FFFF4444</item>
+    <item name="list_item_highlight_color" type="color">#B0B0B0</item>
+    <item name="list_item_normal_color" type="color">#FFFFFF</item>
+</resources>
