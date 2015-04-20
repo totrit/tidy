@@ -41,8 +41,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.NewItemDialog"
-            android:label="@string/title_activity_new_item_dialog" >
+            android:name=".ui.AddItemDialog"
+            android:label="@string/title_new_placement"
+            android:theme="@style/AppTheme.Dialog">
         </activity>
         <activity
             android:name=".ui.SearchActivity"

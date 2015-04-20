@@ -12,5 +12,9 @@
     <string name="close">Close</string>
     <string name="action_search">Search</string>
     <string name="action_new">Create</string>
+    <string name="hint_input_description">Description…</string>
+    <string name="button_add_image">Image…</string>
+    <string name="placed_into">placed into:</string>
+    <string name="title_new_placement">New Placement</string>
 
 </resources>

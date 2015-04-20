@@ -1,6 +1,7 @@
 package com.totrit.tidy.ui;
 
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -89,7 +90,9 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         } else if (id == R.id.action_search) {
             SearchActivity.startActivity(this, false, mSearchActivityCallback);
         }else if (id == R.id.action_new) {
-            //TODO
+            Intent newIntent = new Intent();
+            newIntent.setClass(this, AddItemDialog.class);
+            this.startActivity(newIntent);
         }
 
         return super.onOptionsItemSelected(item);

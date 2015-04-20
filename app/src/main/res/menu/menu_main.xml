@@ -7,7 +7,7 @@
         android:title="@string/action_search"
         tidy:showAsAction="ifRoom" />
     <item android:id="@+id/action_new"
-        android:icon="@drawable/ic_new_item"
+        android:icon="@drawable/ic_new_placement"
         android:title="@string/action_new"
         tidy:showAsAction="ifRoom" />
     <item
