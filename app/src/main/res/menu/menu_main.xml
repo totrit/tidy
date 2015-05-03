@@ -10,9 +10,11 @@
         android:icon="@drawable/ic_new_placement"
         android:title="@string/action_new"
         tidy:showAsAction="ifRoom" />
-    <item
+    <!--
+        <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         tidy:showAsAction="never"
         android:title="@string/action_settings" />
+    -->
 </menu>

@@ -1,4 +1,4 @@
-package com.totrit.tidy.tests;
+package com.totrit.tidy;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.MediumTest;

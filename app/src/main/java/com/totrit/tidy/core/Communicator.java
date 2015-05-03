@@ -47,6 +47,15 @@ public class Communicator {
         }
     }
 
+    public void notifyListViewNeedRefresh() {
+        postRunnableToUi(new Runnable() {
+            @Override
+            public void run() {
+                mMainActivity.refreshCurrentFrag();
+            }
+        });
+    }
+
     public void postRunnableToUi(Runnable r) {
         try {
             mMainActivity.runOnUiThread(r);

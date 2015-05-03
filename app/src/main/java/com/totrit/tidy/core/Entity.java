@@ -1,6 +1,5 @@
 package com.totrit.tidy.core;
 
-import android.graphics.drawable.Drawable;
 import android.text.Spanned;
 
 import com.orm.SugarRecord;
@@ -14,35 +13,59 @@ public class Entity extends SugarRecord<Entity> {
     private final static String LOG_TAG = "Entity";
     private long entity_id;
     private String description;
-    private String pic_path;
+    private String image_name;
     private long container;
+    public long time;
 
-    @Ignore
-    Drawable thumb;
     @Ignore
     Spanned highlightedDescription;
 
     public Entity() {
     }
 
-    public Entity(String description, String picPath) {
+    public Entity(String description, String image) {
         this.entity_id = EntityManager.sInstance.getAnId();
         this.description = description;
-        this.pic_path = picPath;
+        this.image_name = image;
+        this.time = System.currentTimeMillis();
         Utils.d(LOG_TAG, "Entity.init, " + this);
+    }
+
+    public Entity(long id, String description, String picPath) {
+        if (id == -1) {
+            this.entity_id = EntityManager.sInstance.getAnId();
+        } else {
+            this.entity_id = id;
+        }
+        this.description = description;
+        this.image_name = picPath;
+        this.time = System.currentTimeMillis();
+        Utils.d(LOG_TAG, "Entity.init, " + this);
+    }
+
+    public boolean updateProperties(Entity another) {
+        boolean different = false;
+        if (!this.description.equals(another.description)) {
+            this.description = another.description;
+            different = true;
+        }
+        if (this.image_name == null && another.image_name != null ||
+                this.image_name != null && !this.image_name.equals(another.image_name)) {
+            this.image_name = another.image_name;
+            different = true;
+        }
+        if (different) {
+            time = System.currentTimeMillis();
+        }
+        return different;
     }
 
     public void setContainer(long containerId) {
         container = containerId;
-        this.asyncSave();
     }
 
     public long getEntityId() {
         return entity_id;
-    }
-
-    public Drawable getThumb() {
-        return thumb;
     }
 
     public long getContainerId() {
@@ -60,10 +83,10 @@ public class Entity extends SugarRecord<Entity> {
 
     @Override
     public String toString() {
-        return "Entity{id=" + entity_id + ", desc=" + description + ", picPath=" + pic_path;
+        return "Entity{id=" + entity_id + ", desc=" + description + ", imageName=" + image_name;
     }
 
-    private void asyncSave() {
+    public void asyncSave() {
         EntityManager.sInstance.asyncSave(this);
     }
 
@@ -71,7 +94,7 @@ public class Entity extends SugarRecord<Entity> {
         return description;
     }
 
-    public String getPicPath() {
-        return pic_path;
+    public String getImageName() {
+        return image_name;
     }
 }

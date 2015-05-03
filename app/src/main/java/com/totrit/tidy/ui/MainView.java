@@ -2,14 +2,19 @@ package com.totrit.tidy.ui;
 
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
+import com.totrit.tidy.core.Communicator;
 import com.totrit.tidy.core.Entity;
 import com.totrit.tidy.core.EntityManager;
 
@@ -23,7 +28,8 @@ public class MainView extends android.support.v4.app.Fragment {
     private ViewGroup mRootView;
     private RecyclerView mRecyclerView;
     private ProgressBar mProgress;
-    private MainListAdapter mAdapter;
+    private MainListAdapter mAdapter = new MainListAdapter();
+    public String mTitle = null;
 
     static MainView createInstance(long entityId, long highlight) {
         MainView newFrag = new MainView();
@@ -47,7 +53,12 @@ public class MainView extends android.support.v4.app.Fragment {
         mProgress = (ProgressBar)mRootView.findViewById(R.id.progressBar);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this.getActivity()));
         mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setAdapter(mAdapter);
+        loadData();
+        return mRootView;
+    }
 
+    private void loadData() {
         long id = this.getArguments().getLong("id", -1);
         final long highlight = this.getArguments().getLong("highlight", -1);
         Utils.d(LOG_TAG, "creating new Fragment for entity " + id);
@@ -55,15 +66,17 @@ public class MainView extends android.support.v4.app.Fragment {
         EntityManager.getInstance().asyncFetchContained(id, new EntityManager.IDataFetchCallback() {
             @Override
             public void dataFetched(List<Entity> children) {
-                mAdapter = new MainListAdapter();
                 mAdapter.setHightlight(highlight);
+                MainView.this.getArguments().putLong("highlight", -1);
                 mAdapter.setData(children);
-                mRecyclerView.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();
                 showProgress(false);
             }
         });
-        return mRootView;
+    }
+
+    public void refresh() {
+        loadData();
     }
 
     private void showProgress(boolean toShow) {
@@ -74,5 +87,101 @@ public class MainView extends android.support.v4.app.Fragment {
         }
     }
 
+    private class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHolder> {
+        private List<Entity> mDataSet;
+        private long mHightlightId;
+
+        // Provide a reference to the views for each data item
+        // Complex data items may need more than one view per item, and
+        // you provide access to all the views for a data item in a view holder
+        public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
+            public ViewHolder(View v) {
+                super(v);
+                v.setOnClickListener(this);
+                v.findViewById(R.id.list_item_image).setOnClickListener(this);
+                v.setOnLongClickListener(this);
+            }
+
+            @Override
+            public void onClick(View v) {
+                if (v instanceof ImageView) {
+                    Utils.viewImage(mDataSet.get(this.getPosition()).getImageName(), MainView.this.getActivity());
+                } else {
+                    Communicator.getInstance().notifyMainListItemClicked(mDataSet.get(this.getPosition()));
+                }
+            }
+
+            @Override
+            public boolean onLongClick(View view) {
+                final PopupMenu popupMenu = new PopupMenu(view.getContext(), view);
+                popupMenu.inflate(R.menu.list_popup);
+                popupMenu.setOnMenuItemClickListener(
+                        new PopupMenu.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                switch (item.getItemId()) {
+                                    case R.id.menu_del: {
+                                        Entity delEnt = mDataSet.remove(ViewHolder.this.getPosition());
+                                        EntityManager.getInstance().asyncDel(delEnt);
+                                        MainListAdapter.this.notifyDataSetChanged();
+                                        break;
+                                    }
+                                }
+                                return true;
+                            }
+                        }
+                );
+                popupMenu.show();
+                return true;
+            }
+        }
+
+        public void setData(List<Entity> dataset) {
+            mDataSet = dataset;
+        }
+
+        public void setHightlight(long id) {
+            mHightlightId = id;
+        }
+
+        // Create new views (invoked by the layout manager)
+        @Override
+        public MainListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
+                                                             int viewType) {
+            // create a new view
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.main_list_item, parent, false);
+            // set the view's size, margins, paddings and layout parameters
+            ViewHolder vh = new ViewHolder(v);
+            return vh;
+        }
+
+        // Replace the contents of a view (invoked by the layout manager)
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            // - get element from your dataset at this position
+            // - replace the contents of the view with that element
+            ViewGroup wholeItem = (ViewGroup)(holder.itemView);
+            TextView title = (TextView) wholeItem.findViewById(R.id.list_item_title);
+            ((TextView)wholeItem.findViewById(R.id.list_item_time)).setText(Utils.milliesToDateStr(mDataSet.get(position).time));
+            ImageView thumb = (ImageView) wholeItem.findViewById(R.id.list_item_image);
+            title.setText(mDataSet.get(position).getDescription());
+            if (mDataSet.get(position).getEntityId() == mHightlightId) {
+                wholeItem.setPressed(true);
+                setHightlight(-1);
+            }
+            Utils.asyncLoadImage(mDataSet.get(position).getImageName(), thumb);
+        }
+
+        // Return the size of your dataset (invoked by the layout manager)
+        @Override
+        public int getItemCount() {
+            if (mDataSet == null) {
+                return 0;
+            }
+            return mDataSet.size();
+        }
+
+    }
 
 }

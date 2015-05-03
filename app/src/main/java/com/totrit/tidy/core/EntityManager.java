@@ -4,9 +4,12 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Pair;
 
+import com.totrit.tidy.Constants;
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
 
@@ -29,8 +32,9 @@ public class EntityManager {
     static EntityManager sInstance = null;
     private long mEntityIdIncretor = -1; //TODO atomic?
     private boolean INITIALIZED = false;
-    private List<Entity> mEntitiesToSave = new ArrayList<>();
+    private List<Pair<Entity, Integer>> mEntitiesToSave = new ArrayList<>();
     private HardworkHandler mWorkerHandler;
+    private LruCache<Long, Entity> mCachedEntities = new LruCache<>(100); //TODO
 
     static {
         EntityManager.getInstance();
@@ -50,9 +54,7 @@ public class EntityManager {
     }
 
     private EntityManager() {
-        HandlerThread workThread = new HandlerThread("db-worker");
-        workThread.start();
-        mWorkerHandler = new HardworkHandler(workThread.getLooper());
+        mWorkerHandler = new HardworkHandler(WorkingThread.getInstance().getLooper());
         mExecutor = new ThreadPoolExecutor(1, 2, 30, TimeUnit.SECONDS, new LinkedBlockingQueue());
         mExecutor.submit(new Runnable() {
             @Override
@@ -60,13 +62,6 @@ public class EntityManager {
                 EntityManager.this.initIfNecessary();
             }
         });
-    }
-
-    public void place(Entity object, Entity container) {
-        if (!INITIALIZED) {
-            return; //TODO
-        }
-        object.setContainer(container.getEntityId());
     }
 
     Future mLastScheduledTask = null;
@@ -131,13 +126,12 @@ public class EntityManager {
                     mLastScheduledTask = mExecutor.submit(this);
                     return null;
                 }
-                final List<Entity> fetched = Entity.find(Entity.class, "ENTITYID = ?", Long.toString(id));
-                Utils.d(LOG_TAG, "item info query end, fetched list's size: " + (fetched != null? fetched.size(): 0));
-                if (fetched != null && fetched.size() == 1) {
+                final Entity ret = queryEntity(id);
+                if (ret != null) {
                     Communicator.getInstance().postRunnableToUi(new Runnable() {
                         @Override
                         public void run() {
-                            uiCallback.dataFetched(fetched.get(0));
+                            uiCallback.dataFetched(ret);
                         }
                     });
                 }
@@ -159,7 +153,7 @@ public class EntityManager {
         if (entities == null || entities.size() == 0) {
             Utils.d(LOG_TAG, "initializing root...");
             mEntityIdIncretor = ROOT_ENTITY_ID;
-            Entity rootEntity = new Entity("ROOT", null);
+            Entity rootEntity = new Entity("HOME", null);
             rootEntity.setContainer(-1);
             rootEntity.save();
         } else {
@@ -167,6 +161,7 @@ public class EntityManager {
         }
         INITIALIZED = true;
         Utils.d(LOG_TAG, "init done.");
+        Utils.makeSureDirExist(Constants.PIC_PATH_ROOT);
     }
 
     long getAnId() {
@@ -181,7 +176,7 @@ public class EntityManager {
         Utils.d(LOG_TAG, "searching " + descPart);
         //FIXME Use FTS3
 //        return Entity.find(Entity.class, "description MATCH '?'", descPart);
-        List<Entity> ret = Entity.find(Entity.class, "description LIKE '%" + descPart + "%'", null);
+        List<Entity> ret = Entity.find(Entity.class, "description LIKE '%" + descPart + "%' AND entityid != 0", null);
         Utils.d(LOG_TAG, "search done.");
         if (ret != null) {
             for (Entity entity: ret) {
@@ -191,18 +186,22 @@ public class EntityManager {
                     String replaced = entity.getDescription().replaceAll(descPart, "<font color=\"" + Communicator.getInstance().getContext().getResources().getColor(R.color.text_highlight_color) + "\">" + descPart + "</font>");
                     entity.highlightedDescription = Html.fromHtml(replaced);
                 }
-                //TODO
-                entity.thumb = Communicator.getInstance().getContext().getResources().getDrawable(R.drawable.ic_launcher);
                 Utils.d(LOG_TAG, "entity after revised: " + entity);
             }
         }
         return ret;
-        //TODO high light the items
     }
 
-    void asyncSave(Entity entity) {
+    public void asyncSave(Entity entity) {
         synchronized (mEntitiesToSave) {
-            mEntitiesToSave.add(entity);
+            mEntitiesToSave.add(new Pair<Entity, Integer>(entity, 0)); // 0 for save
+        }
+        mWorkerHandler.sendEmptyMessage(HardworkHandler.MSG_SAVE_ENTITY);
+    }
+
+    public void asyncDel(Entity entity) {
+        synchronized (mEntitiesToSave) {
+            mEntitiesToSave.add(new Pair<Entity, Integer>(entity, 1)); // 1 for del
         }
         mWorkerHandler.sendEmptyMessage(HardworkHandler.MSG_SAVE_ENTITY);
     }
@@ -219,16 +218,41 @@ public class EntityManager {
             switch (msg.what) {
                 case MSG_SAVE_ENTITY: {
                     while(true) {
+                        Pair<Entity, Integer> entry = null;
                         Entity entity = null;
                         synchronized (EntityManager.this.mEntitiesToSave) {
                             if (mEntitiesToSave.size() != 0) {
-                                entity = mEntitiesToSave.remove(0);
+                                entry = mEntitiesToSave.remove(0);
+                            }
+                            if (entry == null) {
+                                continue;
                             }
                         }
-                        if (entity != null) {
-                            entity.save();
-                        } else {
-                            break;
+                        if (entry.second == 0) {
+                            entity = entry.first;
+                            Entity existing = mCachedEntities.get(entity.getEntityId());
+                            if (existing == null) {
+                                existing = queryEntity(entity.getEntityId());
+                            }
+                            if (existing != null) {
+                                boolean different = existing.updateProperties(entity);
+                                if (!different) {
+                                    continue;
+                                } else {
+                                    entity = existing;
+                                }
+                            }
+                            if (entity != null) {
+                                entity.save();
+                                mCachedEntities.put(entity.getEntityId(), entity);
+                            } else {
+                                break;
+                            }
+                        } else if (entry.second == 1) {
+                            mCachedEntities.remove(entry.first.getEntityId());
+                            Entity.deleteAll(Entity.class, "entityid IS ?", String.valueOf(entry.first.getEntityId()));
+                            Entity.executeQuery("UPDATE ENTITY SET container = ? WHERE container IS ?", String.valueOf(entry.first.getContainerId()), String.valueOf(entry.first.getEntityId()));
+                            Communicator.getInstance().notifyListViewNeedRefresh();
                         }
                     }
                     break;
@@ -236,6 +260,19 @@ public class EntityManager {
             }
         }
 
+    }
+
+    private Entity queryEntity(long id) {
+        final List<Entity> fetched = Entity.find(Entity.class, "ENTITYID = ?", Long.toString(id));
+        Utils.d(LOG_TAG, "item info query end, fetched list's size: " + (fetched != null? fetched.size(): 0));
+        if (fetched != null && fetched.size() >= 1) {
+            assert fetched.size() == 1;
+            Entity ret = fetched.get(0);
+            mCachedEntities.put(id, ret);
+            return ret;
+        } else {
+            return null;
+        }
     }
 
 }

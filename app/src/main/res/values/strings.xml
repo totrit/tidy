@@ -16,5 +16,6 @@
     <string name="button_add_image">Image…</string>
     <string name="placed_into">placed into:</string>
     <string name="title_new_placement">New Placement</string>
+    <string name="del">Delete</string>
 
 </resources>

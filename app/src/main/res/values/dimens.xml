@@ -8,6 +8,7 @@
     <dimen name="list_item_title_layout_height">25dp</dimen>
     <dimen name="list_item_image_layout_with">100dp</dimen>
     <dimen name="list_item_image_layout_height">100dp</dimen>
+    <dimen name="list_height">110dp</dimen>
 
     <!-- New Item dialog margins -->
     <dimen name="dialog_horizontal_margin">16dp</dimen>

@@ -2,10 +2,13 @@ package com.totrit.tidy.ui;
 
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
 import com.totrit.tidy.core.Communicator;
@@ -26,8 +29,13 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Utils.d(LOG_TAG, "onCreate");
         setContentView(R.layout.activity_main);
         Communicator.getInstance().registerMainActivity(this);
+        // Create global configuration and initialize ImageLoader with this config
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
+        ImageLoader.getInstance().init(config);
+
         newFragment(0, -1);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
@@ -36,8 +44,9 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mSearchResult != null && mSearchResult.selectedId != -1 && mSearchResult.containerId != -1) {
-            newFragment(mSearchResult.containerId, mSearchResult.selectedId);
+        mListViews.get(mCurrentDepth).refresh();
+        if (mSearchResult != null && mSearchResult.selectedEntity != null) {
+            newFragment(mSearchResult.selectedEntity.getContainerId(), mSearchResult.selectedEntity.getEntityId());
         }
         mSearchResult = null;
     }
@@ -55,6 +64,10 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         }
     }
 
+    public void refreshCurrentFrag() {
+        mListViews.get(mCurrentDepth).refresh();
+    }
+
     /*
     return true if end of stack
      */
@@ -67,6 +80,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         getSupportFragmentManager().popBackStack();
         mListViews.remove(mCurrentDepth);
         mCurrentDepth --;
+        getSupportActionBar().setTitle(mListViews.get(mCurrentDepth).mTitle);
         return false;
     }
 
@@ -85,14 +99,14 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        } else if (id == R.id.action_search) {
+        if (id == R.id.action_search) {
             SearchActivity.startActivity(this, false, mSearchActivityCallback);
         }else if (id == R.id.action_new) {
             Intent newIntent = new Intent();
             newIntent.setClass(this, AddItemDialog.class);
             this.startActivity(newIntent);
+        } else if (id == android.R.id.home || id == R.id.up || id == R.id.homeAsUp) {
+            onBackPressed();
         }
 
         return super.onOptionsItemSelected(item);
@@ -109,6 +123,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
     private EntityManager.IItemInfoQueryCallback mItemInfoQueryCallback = new EntityManager.IItemInfoQueryCallback() {
         @Override
         public void dataFetched(Entity entity) {
+            mListViews.get(mCurrentDepth).mTitle = entity.getDescription();
             getSupportActionBar().setTitle(entity.getDescription());
         }
     };

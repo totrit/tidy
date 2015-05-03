@@ -2,14 +2,13 @@ package com.totrit.tidy.ui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -17,11 +16,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.totrit.tidy.Constants;
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
 import com.totrit.tidy.core.Entity;
 import com.totrit.tidy.core.EntityManager;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -112,19 +113,19 @@ public class SearchActivity extends Activity {
             public ViewHolder(View v) {
                 super(v);
                 v.setOnClickListener(this);
+                v.findViewById(R.id.list_item_image).setOnClickListener(this);
             }
 
             @Override
             public void onClick(View v) {
                 if (v instanceof ImageView) {
-                    // TODO view the image
+                    Utils.viewImage(mDataSet.get(this.getPosition()).getImageName(), SearchActivity.this);
                 } else {
                     SearchResult ret = new SearchResult();
-                    ret.selectedId = mDataSet.get(this.getPosition()).getEntityId();
-                    ret.containerId = mDataSet.get(this.getPosition()).getContainerId();
+                    ret.selectedEntity = mDataSet.get(this.getPosition());
                     sSearchCallback.onEnd(ret);
+                    SearchActivity.this.finish();
                 }
-                SearchActivity.this.finish();
             }
         }
 
@@ -146,9 +147,10 @@ public class SearchActivity extends Activity {
         public void onBindViewHolder(ViewHolder holder, int position) {
             ViewGroup wholeItem = (ViewGroup)(holder.itemView);
             TextView title = (TextView) wholeItem.findViewById(R.id.list_item_title);
+            ((TextView)wholeItem.findViewById(R.id.list_item_time)).setText(Utils.milliesToDateStr(mDataSet.get(position).time));
             ImageView thumb = (ImageView) wholeItem.findViewById(R.id.list_item_image);
             title.setText(mDataSet.get(position).getHighlightedDescription());
-            thumb.setImageDrawable(mDataSet.get(position).getThumb());
+            Utils.asyncLoadImage(mDataSet.get(position).getImageName(), thumb);
         }
 
         // Return the size of your dataset (invoked by the layout manager)
@@ -163,13 +165,13 @@ public class SearchActivity extends Activity {
     }
 
     public static class SearchResult {
-        long selectedId = -1;
-        long containerId = -1;
+        Entity selectedEntity;
         String typedText;
 
         @Override
         public String toString() {
-            return "{selected: " + selectedId + ", contianer: " + containerId + ", typed: " + typedText + "}";
+            return "{selected: " + selectedEntity + ", typed: " + typedText + "}";
         }
     }
+
 }
