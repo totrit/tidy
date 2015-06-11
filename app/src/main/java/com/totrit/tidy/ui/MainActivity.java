@@ -44,7 +44,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mListViews.get(mCurrentDepth).refresh();
+//        mListViews.get(mCurrentDepth).refresh();
         if (mSearchResult != null && mSearchResult.selectedEntity != null) {
             newFragment(mSearchResult.selectedEntity.getContainerId(), mSearchResult.selectedEntity.getEntityId());
         }
@@ -64,8 +64,10 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         }
     }
 
-    public void refreshCurrentFrag() {
-        mListViews.get(mCurrentDepth).refresh();
+    public void refreshCurrentFrag(long id) {
+        if (mListViews.get(mCurrentDepth).id == id) {
+            mListViews.get(mCurrentDepth).refresh();
+        }
     }
 
     /*
@@ -142,6 +144,10 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         ft.commit();
         mListViews.add(newFragment);
         mCurrentDepth ++;
+        EntityManager.getInstance().asyncQueryItemInfo(id, mItemInfoQueryCallback);
+    }
+
+    public void updateTitle(long id) {
         EntityManager.getInstance().asyncQueryItemInfo(id, mItemInfoQueryCallback);
     }
 

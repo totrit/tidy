@@ -46,8 +46,7 @@
         <activity
             android:name=".ui.AddItemDialog"
             android:label="@string/title_new_placement"
-            android:theme="@style/AppTheme.Dialog"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"> <!--android:theme="@style/AppTheme.Dialog"-->
         </activity>
         <activity
             android:name=".ui.SearchActivity"

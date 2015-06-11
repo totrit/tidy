@@ -47,13 +47,23 @@ public class Communicator {
         }
     }
 
-    public void notifyListViewNeedRefresh() {
+    public void notifyListViewNeedRefresh(final long id) {
         postRunnableToUi(new Runnable() {
             @Override
             public void run() {
-                mMainActivity.refreshCurrentFrag();
+                mMainActivity.refreshCurrentFrag(id);
             }
         });
+    }
+
+    public void notifyTitleNeedRefresh(final long id) {
+        postRunnableToUi(new Runnable() {
+            @Override
+            public void run() {
+                mMainActivity.updateTitle(id);
+            }
+        });
+
     }
 
     public void postRunnableToUi(Runnable r) {

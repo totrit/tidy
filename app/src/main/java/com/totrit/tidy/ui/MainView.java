@@ -1,5 +1,6 @@
 package com.totrit.tidy.ui;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -30,6 +31,7 @@ public class MainView extends android.support.v4.app.Fragment {
     private ProgressBar mProgress;
     private MainListAdapter mAdapter = new MainListAdapter();
     public String mTitle = null;
+    public long id = -1;
 
     static MainView createInstance(long entityId, long highlight) {
         MainView newFrag = new MainView();
@@ -54,12 +56,19 @@ public class MainView extends android.support.v4.app.Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this.getActivity()));
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mAdapter);
-        loadData();
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(
+                getActivity(), DividerItemDecoration.VERTICAL_LIST));
         return mRootView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadData();
+    }
+
     private void loadData() {
-        long id = this.getArguments().getLong("id", -1);
+        id = this.getArguments().getLong("id", -1);
         final long highlight = this.getArguments().getLong("highlight", -1);
         Utils.d(LOG_TAG, "creating new Fragment for entity " + id);
         showProgress(true);
@@ -104,7 +113,8 @@ public class MainView extends android.support.v4.app.Fragment {
 
             @Override
             public void onClick(View v) {
-                if (v instanceof ImageView) {
+                if (v instanceof ImageView
+                        && mDataSet.get(this.getPosition()).getImageName() != null) {
                     Utils.viewImage(mDataSet.get(this.getPosition()).getImageName(), MainView.this.getActivity());
                 } else {
                     Communicator.getInstance().notifyMainListItemClicked(mDataSet.get(this.getPosition()));

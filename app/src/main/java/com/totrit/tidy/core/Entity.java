@@ -14,7 +14,7 @@ public class Entity extends SugarRecord<Entity> {
     private long entity_id;
     private String description;
     private String image_name;
-    private long container;
+    private long container = -1;
     public long time;
 
     @Ignore
@@ -48,8 +48,10 @@ public class Entity extends SugarRecord<Entity> {
         if (!this.description.equals(another.description)) {
             this.description = another.description;
             different = true;
-        }
-        if (this.image_name == null && another.image_name != null ||
+        } else if (another.container != -1 && this.container != another.container) {
+            this.container = another.container;
+            different = true;
+        } else if (this.image_name == null && another.image_name != null ||
                 this.image_name != null && !this.image_name.equals(another.image_name)) {
             this.image_name = another.image_name;
             different = true;

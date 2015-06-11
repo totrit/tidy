@@ -156,6 +156,7 @@ public class EntityManager {
             Entity rootEntity = new Entity("HOME", null);
             rootEntity.setContainer(-1);
             rootEntity.save();
+            Communicator.getInstance().notifyTitleNeedRefresh(ROOT_ENTITY_ID);
         } else {
             mEntityIdIncretor = entities.get(0).getEntityId() + 1;
         }
@@ -176,15 +177,19 @@ public class EntityManager {
         Utils.d(LOG_TAG, "searching " + descPart);
         //FIXME Use FTS3
 //        return Entity.find(Entity.class, "description MATCH '?'", descPart);
-        List<Entity> ret = Entity.find(Entity.class, "description LIKE '%" + descPart + "%' AND entityid != 0", null);
+        List<Entity> ret = Entity.find(Entity.class, "LOWER(description) LIKE '%" + descPart.toLowerCase() + "%' AND entityid != 0", null);
         Utils.d(LOG_TAG, "search done.");
         if (ret != null) {
             for (Entity entity: ret) {
                 if (TextUtils.isEmpty(descPart)) {
                     entity.highlightedDescription = Html.fromHtml(entity.getDescription());
                 } else {
-                    String replaced = entity.getDescription().replaceAll(descPart, "<font color=\"" + Communicator.getInstance().getContext().getResources().getColor(R.color.text_highlight_color) + "\">" + descPart + "</font>");
-                    entity.highlightedDescription = Html.fromHtml(replaced);
+                    int matchedPos = entity.getDescription().toLowerCase().indexOf(descPart.toLowerCase());
+                    if (matchedPos != -1) {
+                        String matchedContent = entity.getDescription().substring(matchedPos, matchedPos + descPart.length());
+                        String replaced = entity.getDescription().replaceAll(matchedContent, "<font color=\"" + Communicator.getInstance().getContext().getResources().getColor(R.color.text_highlight_color) + "\">" + matchedContent + "</font>");
+                        entity.highlightedDescription = Html.fromHtml(replaced);
+                    }
                 }
                 Utils.d(LOG_TAG, "entity after revised: " + entity);
             }
@@ -221,8 +226,10 @@ public class EntityManager {
                         Pair<Entity, Integer> entry = null;
                         Entity entity = null;
                         synchronized (EntityManager.this.mEntitiesToSave) {
-                            if (mEntitiesToSave.size() != 0) {
+                            if (mEntitiesToSave.size() > 0) {
                                 entry = mEntitiesToSave.remove(0);
+                            } else {
+                                break;
                             }
                             if (entry == null) {
                                 continue;
@@ -243,8 +250,12 @@ public class EntityManager {
                                 }
                             }
                             if (entity != null) {
+                                if (entity.getContainerId() == -1) {
+                                    entity.setContainer(ROOT_ENTITY_ID);
+                                }
                                 entity.save();
                                 mCachedEntities.put(entity.getEntityId(), entity);
+                                Communicator.getInstance().notifyListViewNeedRefresh(entity.getContainerId());
                             } else {
                                 break;
                             }
@@ -252,7 +263,7 @@ public class EntityManager {
                             mCachedEntities.remove(entry.first.getEntityId());
                             Entity.deleteAll(Entity.class, "entityid IS ?", String.valueOf(entry.first.getEntityId()));
                             Entity.executeQuery("UPDATE ENTITY SET container = ? WHERE container IS ?", String.valueOf(entry.first.getContainerId()), String.valueOf(entry.first.getEntityId()));
-                            Communicator.getInstance().notifyListViewNeedRefresh();
+                            Communicator.getInstance().notifyListViewNeedRefresh(entry.first.getContainerId());
                         }
                     }
                     break;

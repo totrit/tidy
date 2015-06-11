@@ -13,4 +13,5 @@
     <!-- New Item dialog margins -->
     <dimen name="dialog_horizontal_margin">16dp</dimen>
     <dimen name="dialog_vertical_margin">50dp</dimen>
+    <dimen name="little_span">5dp</dimen>
 </resources>

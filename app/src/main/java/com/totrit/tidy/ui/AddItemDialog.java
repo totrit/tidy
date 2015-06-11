@@ -51,6 +51,12 @@ public class AddItemDialog extends ActionBarActivity {
                 }
             }
         });
+        mObjectDescEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                handleObjectDescClick();
+            }
+        });
 
         mContainerDescEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -60,7 +66,22 @@ public class AddItemDialog extends ActionBarActivity {
                 }
             }
         });
+        mContainerDescEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                handleContainerDescClick();
+            }
+        });
 
+        mObjectImageButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (view == mObjectImageButton && b) {
+                    mSelectingImageFor = 0;
+                    Utils.selectImage(AddItemDialog.this);
+                }
+            }
+        });
         mObjectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -69,6 +90,15 @@ public class AddItemDialog extends ActionBarActivity {
             }
         });
 
+        mContainerImageButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (view == mContainerImageButton && b) {
+                    mSelectingImageFor = 1;
+                    Utils.selectImage(AddItemDialog.this);
+                }
+            }
+        });
         mContainerImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
