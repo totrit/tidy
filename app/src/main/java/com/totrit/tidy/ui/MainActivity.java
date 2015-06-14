@@ -3,6 +3,7 @@ package com.totrit.tidy.ui;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,6 +40,8 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         newFragment(0, -1);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
+        getSupportActionBar().setElevation(Utils.dp2px(getResources().getDimension(R.dimen.elev_action_bar), getResources()));
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.color_primary_dark)));
     }
 
     @Override

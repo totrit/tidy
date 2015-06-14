@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.TypedValue;
 import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -98,6 +100,9 @@ public class Utils {
             inChannel.transferTo(0, inChannel.size(), outChannel);
             return true;
         } catch (IOException ignore) {
+            if (LOG_ENABLED) {
+                ignore.printStackTrace();
+            }
         } finally {
             try {
                 if (inStream != null) {
@@ -139,5 +144,10 @@ public class Utils {
         File file = new File(Constants.PIC_PATH_ROOT + imageName);
         intent.setDataAndType(Uri.fromFile(file), "image/*");
         context.startActivity(intent);
+    }
+
+    public static float dp2px(float dp, Resources res) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                dp, res.getDisplayMetrics());
     }
 }

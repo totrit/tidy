@@ -115,6 +115,7 @@ public class MainView extends android.support.v4.app.Fragment {
             public void onClick(View v) {
                 if (v instanceof ImageView
                         && mDataSet.get(this.getPosition()).getImageName() != null) {
+                    Utils.d(LOG_TAG, "viewing image " + mDataSet.get(this.getPosition()).getImageName());
                     Utils.viewImage(mDataSet.get(this.getPosition()).getImageName(), MainView.this.getActivity());
                 } else {
                     Communicator.getInstance().notifyMainListItemClicked(mDataSet.get(this.getPosition()));
