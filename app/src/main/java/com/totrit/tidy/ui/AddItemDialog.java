@@ -1,5 +1,6 @@
 package com.totrit.tidy.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
@@ -153,6 +155,7 @@ public class AddItemDialog extends ActionBarActivity {
                     }
                     setObjectImage(null);
                 }
+                hideKeyboard();
             }
         });
     }
@@ -176,6 +179,7 @@ public class AddItemDialog extends ActionBarActivity {
                         mContainerDescEdit.setText(result.typedText);
                     }
                 }
+                hideKeyboard();
             }
         });
     }
@@ -249,6 +253,16 @@ public class AddItemDialog extends ActionBarActivity {
     private class EntityCreationController {
         volatile long usingExsitedObjectId = -1;
         volatile long usingExsitedContainerId = -1;
+    }
+
+    private void hideKeyboard() {
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            view.clearFocus();
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
 }

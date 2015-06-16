@@ -6,7 +6,7 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="center"
         android:padding="10dp"
         android:focusableInTouchMode="true">
@@ -24,22 +24,26 @@
                 android:textSize="20sp"
                 android:hint="@string/hint_object_desc"
                 android:id="@+id/objectDesc"
-                android:enabled="true"/>
+                android:enabled="true"
+                android:layout_marginTop="@dimen/little_span"/>
 
             <ImageButton
                 android:layout_width="120dp"
                 android:layout_height="120dp"
+                android:layout_margin="@dimen/little_span"
                 android:text="@string/button_add_image"
                 android:id="@+id/objectImage"
                 android:adjustViewBounds="true"
-                android:background="@drawable/ic_image_placeholder"
-                android:focusableInTouchMode="true"/>
+                android:focusableInTouchMode="true"
+                android:background="@drawable/new_image_outline"
+                android:src="@drawable/ic_image_placeholder"/>
         </LinearLayout>
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="@drawable/ic_archive_black_48dp"/>
+            android:background="@drawable/ic_archive_black_48dp"
+            android:alpha="0.5"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,25 +57,29 @@
                 android:textSize="20sp"
                 android:hint="@string/hint_target_desc"
                 android:id="@+id/containerDesc"
-                android:enabled="true"/>
+                android:enabled="true"
+                android:layout_marginTop="@dimen/little_span"/>
 
             <ImageButton
                 android:layout_width="120dp"
                 android:layout_height="120dp"
+                android:layout_margin="@dimen/little_span"
                 android:text="@string/button_add_image"
                 android:id="@+id/containerImage"
                 android:adjustViewBounds="true"
-                android:background="@drawable/ic_image_placeholder"
-                android:focusableInTouchMode="true"/>
+                android:focusableInTouchMode="true"
+                android:background="@drawable/new_image_outline"
+                android:src="@drawable/ic_image_placeholder"/>
         </LinearLayout>
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/done"
             android:id="@+id/button_confirm"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="5dp"
+            android:layout_gravity="center_horizontal|bottom"
             android:background="@color/holo_darker_green"/>
         </LinearLayout>
 

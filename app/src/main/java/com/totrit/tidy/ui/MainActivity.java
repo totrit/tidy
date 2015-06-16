@@ -41,7 +41,6 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         getSupportActionBar().setElevation(Utils.dp2px(getResources().getDimension(R.dimen.elev_action_bar), getResources()));
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.color_primary_dark)));
     }
 
     @Override
