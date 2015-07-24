@@ -177,7 +177,7 @@ public class EntityManager {
         Utils.d(LOG_TAG, "searching " + descPart);
         //FIXME Use FTS3
 //        return Entity.find(Entity.class, "description MATCH '?'", descPart);
-        List<Entity> ret = Entity.find(Entity.class, "LOWER(description) LIKE '%" + descPart.toLowerCase() + "%' AND entityid != 0", null);
+        List<Entity> ret = Entity.find(Entity.class, "LOWER(description) LIKE '%" + descPart.toLowerCase() + "%' AND entityid != 0");
         Utils.d(LOG_TAG, "search done.");
         if (ret != null) {
             for (Entity entity: ret) {
