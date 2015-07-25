@@ -197,12 +197,12 @@ public class AddItemDialog extends ActionBarActivity {
                 public void run() {
                     final String newImage = Utils.generateNewImageName();
                     if (rc == Utils.REQUEST_CAMERA) {
-                        Utils.copy(Constants.TMP_SHOT_PIC_PATH, Constants.PIC_PATH_ROOT + newImage);
+                        Utils.copyImageToPrivateDir(Constants.TMP_SHOT_PIC_PATH, newImage);
                     } else if (rc == Utils.SELECT_FILE) {
                         Uri selectedImageUri = data.getData();
                         String gallPicPath = getAbsolutePath(selectedImageUri);
                         Utils.d(LOG_TAG, "selected image path: " + gallPicPath);
-                        Utils.copy(gallPicPath, Constants.PIC_PATH_ROOT + newImage);
+                        Utils.copyImageToPrivateDir(gallPicPath, newImage);
                     }
                     AddItemDialog.this.runOnUiThread(new Runnable() {
                         @Override

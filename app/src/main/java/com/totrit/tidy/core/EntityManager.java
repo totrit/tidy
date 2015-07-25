@@ -149,6 +149,7 @@ public class EntityManager {
     }
 
     public void initIfNecessary() {
+        Constants.init();
         List<Entity> entities = Entity.find(Entity.class, null, null, null, "entityid DESC", "1");
         if (entities == null || entities.size() == 0) {
             Utils.d(LOG_TAG, "initializing root...");
@@ -160,9 +161,9 @@ public class EntityManager {
         } else {
             mEntityIdIncretor = entities.get(0).getEntityId() + 1;
         }
+        Utils.makeSureDirExist(Constants.PIC_PATH_ROOT);
         INITIALIZED = true;
         Utils.d(LOG_TAG, "init done.");
-        Utils.makeSureDirExist(Constants.PIC_PATH_ROOT);
     }
 
     long getAnId() {

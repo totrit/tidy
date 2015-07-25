@@ -47,6 +47,16 @@ public class Utils {
 
     public final static int REQUEST_CAMERA = 0;
     public final static int SELECT_FILE = 1;
+    public static boolean makeSureDirExist(String dir) {
+        File d = new File(dir);
+        if (d.exists() && d.isDirectory()) {
+            return true;
+        } else if (d.exists() && !d.isDirectory()){
+            d.delete();
+        }
+        return d.mkdirs();
+    }
+
     public static void selectImage(final Activity context) {
         final CharSequence[] items = { "Take Photo", "Choose from Library",
                 "Cancel" };
@@ -77,17 +87,8 @@ public class Utils {
         builder.show();
     }
 
-    public static boolean makeSureDirExist(String dir) {
-        File d = new File(dir);
-        if (d.exists() && d.isDirectory()) {
-            return true;
-        } else if (d.exists() && !d.isDirectory()){
-            d.delete();
-        }
-        return d.mkdirs();
-    }
-
-    public static boolean copy(String srcPath, String dstPath) {
+    public static boolean copyImageToPrivateDir(String srcPath, String imgName) {
+        final String dstPath = Constants.PIC_PATH_ROOT + File.separator + imgName;
         File src = new File(srcPath);
         File dst = new File(dstPath);
         FileInputStream inStream = null;
@@ -103,6 +104,13 @@ public class Utils {
             if (LOG_ENABLED) {
                 ignore.printStackTrace();
             }
+            // pic root candidates should not be too many, recursive call would be ok.
+            if (Constants.nextPicRoot()) {
+                return copyImageToPrivateDir(srcPath, dstPath);
+            } else {
+                //TODO tips?
+                return false;
+            }
         } finally {
             try {
                 if (inStream != null) {
@@ -114,7 +122,6 @@ public class Utils {
             } catch (IOException ignore) {
             }
         }
-        return false;
     }
 
     public static String generateNewImageName() {
@@ -134,20 +141,42 @@ public class Utils {
         if (imgName == null) {
             return;
         }
-        final String IMG_PREFIX = Constants.LOCAL_FILE_SCHEME + Constants.PIC_PATH_ROOT;
-        ImageLoader.getInstance().displayImage(IMG_PREFIX + imgName, view);
+        File fileHandle = tryGetImageFileHandle(imgName);
+        if (fileHandle != null) {
+            ImageLoader.getInstance().displayImage(Constants.LOCAL_FILE_SCHEME + fileHandle.getAbsolutePath(), view);
+        }
     }
 
     public static void viewImage(String imageName, Activity context) {
         Intent intent = new Intent();
         intent.setAction(android.content.Intent.ACTION_VIEW);
-        File file = new File(Constants.PIC_PATH_ROOT + imageName);
-        intent.setDataAndType(Uri.fromFile(file), "image/*");
-        context.startActivity(intent);
+        File file = tryGetImageFileHandle(imageName);
+        if (file != null) {
+            intent.setDataAndType(Uri.fromFile(file), "image/*");
+            context.startActivity(intent);
+        }
     }
 
     public static float dp2px(float dp, Resources res) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 dp, res.getDisplayMetrics());
+    }
+
+    public static File tryGetImageFileHandle(String imgName) {
+        File f = new File(Constants.PIC_PATH_ROOT, imgName);
+        if (f.exists()) {
+            return f;
+        } else if (Constants.getPicRootCandidates().length > 1) {
+            File[] candidates = Constants.getPicRootCandidates();
+            for (int i = 0; i < candidates.length; i ++) {
+                f = new File(candidates[i], imgName);
+                if (f.exists()) {
+                    return f;
+                }
+            }
+            return null;
+        } else {
+            return null;
+        }
     }
 }
