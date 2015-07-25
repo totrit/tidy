@@ -5,7 +5,30 @@
     android:layout_height="match_parent"
     tools:context="com.totrit.tidy.ui.MainActivity"
     tools:ignore="MergeRootFrame"
-    android:orientation="horizontal" >
+    android:orientation="vertical" >
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/dark"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+        <ImageButton
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/little_span"
+            android:background="@drawable/ic_arrow_back_white_24dp"
+            android:onClick="onBackClicked"/>
+        <TextView
+            android:id="@+id/toolbarTitle"
+            android:layout_width="wrap_content"
+            android:gravity="center_vertical"
+            android:textColor="@color/light"
+            android:textSize="@dimen/title_text_size"
+            android:minWidth="@dimen/min_title_width"
+            android:layout_marginLeft="@dimen/little_span"
+            android:layout_height="match_parent" />
+    </android.support.v7.widget.Toolbar>
     <FrameLayout
         android:id="@+id/frag_area"
         android:layout_width="match_parent"

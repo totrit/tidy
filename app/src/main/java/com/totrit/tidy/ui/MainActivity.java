@@ -2,11 +2,12 @@ package com.totrit.tidy.ui;
 
 import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -26,6 +27,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
 
     private int mCurrentDepth = -1;
     private SearchActivity.SearchResult mSearchResult;
+    private TextView title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +40,18 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         ImageLoader.getInstance().init(config);
 
         newFragment(0, -1);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Toolbar toolBar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolBar);
+        title = (TextView) findViewById(R.id.toolbarTitle);
+        title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Utils.d(LOG_TAG, "title clicked");
+            }
+        });
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setElevation(Utils.dp2px(getResources().getDimension(R.dimen.elev_action_bar), getResources()));
     }
 
@@ -84,7 +96,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         getSupportFragmentManager().popBackStack();
         mListViews.remove(mCurrentDepth);
         mCurrentDepth --;
-        getSupportActionBar().setTitle(mListViews.get(mCurrentDepth).mTitle);
+        setTitleText(mListViews.get(mCurrentDepth).mTitle);
         return false;
     }
 
@@ -128,7 +140,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         @Override
         public void dataFetched(Entity entity) {
             mListViews.get(mCurrentDepth).mTitle = entity.getDescription();
-            getSupportActionBar().setTitle(entity.getDescription());
+            setTitleText(entity.getDescription());
         }
     };
 
@@ -151,6 +163,14 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
 
     public void updateTitle(long id) {
         EntityManager.getInstance().asyncQueryItemInfo(id, mItemInfoQueryCallback);
+    }
+
+    private void setTitleText(final String titleTxt) {
+        title.setText(titleTxt);
+    }
+
+    public void onBackClicked(View v) {
+        onBackPressed();
     }
 
 }

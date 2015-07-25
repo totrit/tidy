@@ -11,6 +11,9 @@ android {
                     output.outputFile.name.replace(".apk", "-${variant.versionName}.apk"))
         }
     }
+    lintOptions {
+        abortOnError false
+    }
     defaultConfig {
         applicationId "com.totrit.tidy"
         minSdkVersion 9
@@ -21,10 +24,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("/Users/maruilin/work/totrit.keystore")
-            storePassword "nihaoa"
+            storeFile file(KEYSTORE_FILE)
+            storePassword KEYSTORE_PASSWORD
             keyAlias "totrit"
-            keyPassword "nihaoa"
+            keyPassword KEY_PASSWORD
         }
     }
 
