@@ -30,7 +30,6 @@ public class MainView extends android.support.v4.app.Fragment {
     private RecyclerView mRecyclerView;
     private ProgressBar mProgress;
     private MainListAdapter mAdapter = new MainListAdapter();
-    public String mTitle = null;
     public long id = -1;
 
     static MainView createInstance(long entityId, long highlight) {

@@ -19,18 +19,20 @@
             android:layout_marginRight="@dimen/little_span"
             android:background="@drawable/ic_arrow_back_white_24dp"
             android:onClick="onBackClicked"/>
-        <TextView
+        <Spinner
             android:id="@+id/toolbarTitle"
             android:layout_width="wrap_content"
-            android:gravity="center_vertical"
-            android:textColor="@color/light"
-            android:textSize="@dimen/title_text_size"
-            android:minWidth="@dimen/min_title_width"
+            android:layout_height="match_parent"
             android:layout_marginLeft="@dimen/little_span"
-            android:layout_height="match_parent" />
+            android:textSize="@dimen/title_text_size"
+            android:paddingRight="18dp"
+            android:textColor="@color/light"
+            android:gravity="center_vertical"
+            android:background="@drawable/title_bg"/>
     </android.support.v7.widget.Toolbar>
     <FrameLayout
         android:id="@+id/frag_area"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+    </FrameLayout>
     </LinearLayout>

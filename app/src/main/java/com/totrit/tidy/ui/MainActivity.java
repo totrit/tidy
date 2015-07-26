@@ -1,12 +1,16 @@
 package com.totrit.tidy.ui;
 
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -18,6 +22,7 @@ import com.totrit.tidy.core.Entity;
 import com.totrit.tidy.core.EntityManager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -27,7 +32,8 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
 
     private int mCurrentDepth = -1;
     private SearchActivity.SearchResult mSearchResult;
-    private TextView title;
+    private Spinner title;
+    private DropDownContainerChainProcessor titleController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,20 +45,17 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
         ImageLoader.getInstance().init(config);
 
-        newFragment(0, -1);
         Toolbar toolBar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolBar);
-        title = (TextView) findViewById(R.id.toolbarTitle);
-        title.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Utils.d(LOG_TAG, "title clicked");
-            }
-        });
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        title = (Spinner) findViewById(R.id.toolbarTitle);
+        titleController = new DropDownContainerChainProcessor(this, R.layout.container_chain_item, R.id.container_name, new ArrayList<String>());
+        titleController.setDropDownViewResource(R.layout.container_chain_item);
+        title.setOnItemSelectedListener(titleController);
+        title.setAdapter(titleController);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setElevation(Utils.dp2px(getResources().getDimension(R.dimen.elev_action_bar), getResources()));
+        newFragment(0, -1);
     }
 
     @Override
@@ -96,7 +99,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         getSupportFragmentManager().popBackStack();
         mListViews.remove(mCurrentDepth);
         mCurrentDepth --;
-        setTitleText(mListViews.get(mCurrentDepth).mTitle);
+        updateTitle(mListViews.get(mCurrentDepth).id);
         return false;
     }
 
@@ -136,14 +139,6 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         }
     };
 
-    private EntityManager.IItemInfoQueryCallback mItemInfoQueryCallback = new EntityManager.IItemInfoQueryCallback() {
-        @Override
-        public void dataFetched(Entity entity) {
-            mListViews.get(mCurrentDepth).mTitle = entity.getDescription();
-            setTitleText(entity.getDescription());
-        }
-    };
-
     public void onListItemClicked(Entity entity) {
         newFragment(entity.getEntityId(), -1);
     }
@@ -158,19 +153,59 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         ft.commit();
         mListViews.add(newFragment);
         mCurrentDepth ++;
-        EntityManager.getInstance().asyncQueryItemInfo(id, mItemInfoQueryCallback);
+        updateTitle(id);
     }
 
     public void updateTitle(long id) {
-        EntityManager.getInstance().asyncQueryItemInfo(id, mItemInfoQueryCallback);
-    }
-
-    private void setTitleText(final String titleTxt) {
-        title.setText(titleTxt);
+        titleController.updateChain(id);
     }
 
     public void onBackClicked(View v) {
         onBackPressed();
+    }
+
+    private class DropDownContainerChainProcessor extends ArrayAdapter implements AdapterView.OnItemSelectedListener {
+        private List<Long> chain = new ArrayList<Long>(10);
+        private List<String> chainName = new ArrayList<>(10);
+
+        public DropDownContainerChainProcessor(Context context, int resource, int textViewId, List objects) {
+            super(context, resource, textViewId, objects);
+        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+            if (position != 0) {
+                newFragment(chain.get(position), -1);
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
+        }
+
+        private void updateChain(long id) {
+            chain.clear();
+            chainName.clear();
+            EntityManager.getInstance().asyncQueryItemInfo(id, mItemInfoQueryCallback);
+        }
+
+        private EntityManager.IItemInfoQueryCallback mItemInfoQueryCallback = new EntityManager.IItemInfoQueryCallback() {
+            @Override
+            public void dataFetched(Entity entity) {
+                chainName.add(entity.getDescription());
+                chain.add(entity.getEntityId());
+                if (entity.getEntityId() != EntityManager.ROOT_ENTITY_ID &&
+                        !chain.contains(entity.getContainerId())) {
+                    EntityManager.getInstance().asyncQueryItemInfo(entity.getContainerId(), mItemInfoQueryCallback);
+                } else {
+                    clear();
+                    for (String name: chainName) {
+                        add(name);
+                    }
+                }
+            }
+        };
     }
 
 }
