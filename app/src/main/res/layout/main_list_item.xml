@@ -1,38 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@drawable/selector_list_item_highlighted"
     android:layout_width="match_parent"
     android:layout_height="@dimen/list_height"
     android:longClickable="true">
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/list_item_image_layout_with"
-        android:orientation="vertical">
-        <TextView android:id="@+id/list_item_title"
-            android:maxWidth="300dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:layout_margin="5dp"
-            android:text="test"/>
-        <TextView android:id="@+id/list_item_time"
-            android:maxWidth="300dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_gravity="bottom"
-            android:layout_margin="5dp"
-            android:text="test"/>
-    </FrameLayout>
-
     <ImageView android:id="@+id/list_item_image"
         android:layout_width="@dimen/list_item_image_layout_with"
         android:layout_height="@dimen/list_item_image_layout_height"
-        android:layout_gravity="right|center_vertical"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
         android:layout_margin="5dp"
         android:clickable="true"/>
-
-</FrameLayout>
+    <TextView android:id="@+id/list_item_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_margin="5dp"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/list_item_image"
+        android:text="test"/>
+    <TextView android:id="@+id/list_item_time"
+        android:maxWidth="300dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="5dp"
+        android:text="test"/>
+</RelativeLayout>
