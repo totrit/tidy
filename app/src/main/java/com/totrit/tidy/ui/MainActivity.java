@@ -11,10 +11,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
 import com.totrit.tidy.core.Communicator;
@@ -22,7 +19,6 @@ import com.totrit.tidy.core.Entity;
 import com.totrit.tidy.core.EntityManager;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 
@@ -41,9 +37,6 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         Utils.d(LOG_TAG, "onCreate");
         setContentView(R.layout.activity_main);
         Communicator.getInstance().registerMainActivity(this);
-        // Create global configuration and initialize ImageLoader with this config
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
-        ImageLoader.getInstance().init(config);
 
         Toolbar toolBar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolBar);

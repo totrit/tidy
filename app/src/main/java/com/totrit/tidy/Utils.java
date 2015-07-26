@@ -10,7 +10,7 @@ import android.provider.MediaStore;
 import android.util.TypedValue;
 import android.widget.ImageView;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
+import com.squareup.picasso.Picasso;
 import com.totrit.tidy.core.Communicator;
 
 import java.io.File;
@@ -143,7 +143,8 @@ public class Utils {
         }
         File fileHandle = tryGetImageFileHandle(imgName);
         if (fileHandle != null) {
-            ImageLoader.getInstance().displayImage(Constants.LOCAL_FILE_SCHEME + fileHandle.getAbsolutePath(), view);
+            Picasso.with(Communicator.getInstance().getContext()).load(fileHandle).centerCrop().fit().into(view);
+//            ImageLoader.getInstance().displayImage(Constants.LOCAL_FILE_SCHEME + fileHandle.getAbsolutePath(), view);
         }
     }
 
