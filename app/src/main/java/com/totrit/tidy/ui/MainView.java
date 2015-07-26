@@ -67,6 +67,7 @@ public class MainView extends android.support.v4.app.Fragment {
     }
 
     private void loadData() {
+        Utils.d(LOG_TAG, "loadData");
         id = this.getArguments().getLong("id", -1);
         final long highlight = this.getArguments().getLong("highlight", -1);
         Utils.d(LOG_TAG, "creating new Fragment for entity " + id);
@@ -74,6 +75,7 @@ public class MainView extends android.support.v4.app.Fragment {
         EntityManager.getInstance().asyncFetchContained(id, new EntityManager.IDataFetchCallback() {
             @Override
             public void dataFetched(List<Entity> children) {
+                Utils.d(LOG_TAG, "dataFetched");
                 mAdapter.setHightlight(highlight);
                 MainView.this.getArguments().putLong("highlight", -1);
                 mAdapter.setData(children);
@@ -88,6 +90,7 @@ public class MainView extends android.support.v4.app.Fragment {
     }
 
     private void showProgress(boolean toShow) {
+        Utils.d(LOG_TAG, "showProgress=" + toShow);
         if (toShow) {
             mProgress.setVisibility(View.VISIBLE);
         } else {

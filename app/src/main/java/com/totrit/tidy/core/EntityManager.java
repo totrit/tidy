@@ -64,17 +64,13 @@ public class EntityManager {
         });
     }
 
-    Future mLastScheduledTask = null;
     public void asyncFetchContained(final long containerId, final IDataFetchCallback uiCallback) {
-        // cancel the previous task
-        if (mLastScheduledTask != null) {
-            mLastScheduledTask.cancel(true);
-        }
-        mLastScheduledTask = mExecutor.submit(new Callable<Void>() {
+        mExecutor.submit(new Callable<Void>() {
             public Void call() {
+                Utils.d(LOG_TAG, "asyncFetchContained.call, inited=" + INITIALIZED);
                 if (!INITIALIZED) {
                     Utils.sleep(50);
-                    mLastScheduledTask = mExecutor.submit(this);
+                    mExecutor.submit(this);
                     return null;
                 }
                 final List<Entity> fetched = internalGetContained(containerId);
@@ -90,15 +86,11 @@ public class EntityManager {
     }
 
     public void asyncSearch(final String descPart, final IDataFetchCallback uiCallback) {
-        // cancel the previous task
-        if (mLastScheduledTask != null) {
-            mLastScheduledTask.cancel(true);
-        }
-        mLastScheduledTask = mExecutor.submit(new Callable<Void>() {
+        mExecutor.submit(new Callable<Void>() {
             public Void call() {
                 if (!INITIALIZED) {
                     Utils.sleep(50);
-                    mLastScheduledTask = mExecutor.submit(this);
+                    mExecutor.submit(this);
                     return null;
                 }
                 final List<Entity> fetched = internalSearch(descPart);
@@ -115,15 +107,12 @@ public class EntityManager {
     }
 
     public void asyncQueryItemInfo(final long id, final IItemInfoQueryCallback uiCallback) {
-        // cancel the previous task
-        if (mLastScheduledTask != null) {
-            mLastScheduledTask.cancel(true);
-        }
-        mLastScheduledTask = mExecutor.submit(new Callable<Void>() {
+        mExecutor.submit(new Callable<Void>() {
             public Void call() {
+                Utils.d(LOG_TAG, "asyncQueryItemInfo.call, inited=" + INITIALIZED);
                 if (!INITIALIZED) {
                     Utils.sleep(50);
-                    mLastScheduledTask = mExecutor.submit(this);
+                    mExecutor.submit(this);
                     return null;
                 }
                 final Entity ret = queryEntity(id);
@@ -238,10 +227,7 @@ public class EntityManager {
                         }
                         if (entry.second == 0) {
                             entity = entry.first;
-                            Entity existing = mCachedEntities.get(entity.getEntityId());
-                            if (existing == null) {
-                                existing = queryEntity(entity.getEntityId());
-                            }
+                            Entity existing = queryEntity(entity.getEntityId());
                             if (existing != null) {
                                 boolean different = existing.updateProperties(entity);
                                 if (!different) {
@@ -275,15 +261,20 @@ public class EntityManager {
     }
 
     private Entity queryEntity(long id) {
-        final List<Entity> fetched = Entity.find(Entity.class, "ENTITYID = ?", Long.toString(id));
-        Utils.d(LOG_TAG, "item info query end, fetched list's size: " + (fetched != null? fetched.size(): 0));
-        if (fetched != null && fetched.size() >= 1) {
-            assert fetched.size() == 1;
-            Entity ret = fetched.get(0);
-            mCachedEntities.put(id, ret);
+        Entity ret = mCachedEntities.get(id);
+        if (ret != null) {
+            Utils.d(LOG_TAG, "queryEntity, id=" + id + ", from-cache=true");
             return ret;
         } else {
-            return null;
+            final List<Entity> fetched = Entity.find(Entity.class, "ENTITYID = ?", Long.toString(id));
+            Utils.d(LOG_TAG, "queryEntity, id=" + id + ", fetched list's size: " + (fetched != null ? fetched.size() : 0));
+            if (fetched != null && fetched.size() >= 1) {
+                ret = fetched.get(0);
+                mCachedEntities.put(id, ret);
+                return ret;
+            } else {
+                return null;
+            }
         }
     }
 

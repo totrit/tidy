@@ -203,6 +203,7 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
                     for (String name: chainName) {
                         add(name);
                     }
+                    title.setSelection(0);
                 }
             }
         };
