@@ -81,6 +81,11 @@ public class MainView extends android.support.v4.app.Fragment {
                 mAdapter.setData(children);
                 mAdapter.notifyDataSetChanged();
                 showProgress(false);
+                if (children == null || children.size() == 0) {
+                    Utils.showToast(R.string.toast_empty_list);
+                } else {
+                    Utils.showToast(-1);
+                }
             }
         });
     }
@@ -195,6 +200,12 @@ public class MainView extends android.support.v4.app.Fragment {
             return mDataSet.size();
         }
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Utils.showToast(-1);
     }
 
 }

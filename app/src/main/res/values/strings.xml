@@ -18,5 +18,7 @@
     <string name="placed_into">placed into:</string>
     <string name="title_new_placement">New Placement</string>
     <string name="del">Delete</string>
+    <string name="toast_empty_list">Empty!</string>
+    <string name="toast_search_not_matched">No match, Try new words!</string>
 
 </resources>

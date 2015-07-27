@@ -71,6 +71,11 @@ public class SearchActivity extends Activity {
                         mAdapter.setData(candidates);
                         mRecyclerView.setAdapter(mAdapter);
                         mAdapter.notifyDataSetChanged();
+                        if (candidates == null || candidates.isEmpty()) {
+                            Utils.showToast(R.string.toast_search_not_matched);
+                        } else {
+                            Utils.showToast(-1);
+                        }
                     }
                 });
             }
@@ -172,6 +177,12 @@ public class SearchActivity extends Activity {
         public String toString() {
             return "{selected: " + selectedEntity + ", typed: " + typedText + "}";
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Utils.showToast(-1);
     }
 
 }

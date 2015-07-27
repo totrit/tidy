@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.TypedValue;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.totrit.tidy.core.Communicator;
@@ -179,5 +180,17 @@ public class Utils {
         } else {
             return null;
         }
+    }
+
+    private static Toast currentToast;
+    public static void showToast(final int msgid) {
+        if (currentToast != null) {
+            currentToast.cancel();
+        }
+        if (msgid == -1) {
+            return;
+        }
+        currentToast = Toast.makeText(Communicator.getInstance().getContext(), msgid, Toast.LENGTH_LONG);
+        currentToast.show();
     }
 }
