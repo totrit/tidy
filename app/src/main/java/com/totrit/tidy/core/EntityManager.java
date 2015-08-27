@@ -22,6 +22,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+
 /**
  * Created by maruilin on 15/4/6.
  */
@@ -64,77 +70,71 @@ public class EntityManager {
         });
     }
 
-    public void asyncFetchContained(final long containerId, final IDataFetchCallback uiCallback) {
-        mExecutor.submit(new Callable<Void>() {
-            public Void call() {
-                Utils.d(LOG_TAG, "asyncFetchContained.call, inited=" + INITIALIZED);
-                if (!INITIALIZED) {
-                    Utils.sleep(50);
-                    mExecutor.submit(this);
-                    return null;
-                }
-                final List<Entity> fetched = internalGetContained(containerId);
-                Communicator.getInstance().postRunnableToUi(new Runnable() {
-                    @Override
-                    public void run() {
-                        uiCallback.dataFetched(fetched);
-                    }
-                });
-                return null;
+    public void getContained(final long containerId, Action1<List<Entity>> sub) {
+        Observable.create(new Observable.OnSubscribe<List<Entity>>() {
+            @Override
+            public void call(Subscriber<? super List<Entity>> sub) {
+                List<Entity> contained = internalGetContained(containerId);
+                sub.onNext(contained);
+                sub.onCompleted();
             }
-        });
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(sub);
     }
 
-    public void asyncSearch(final String descPart, final IDataFetchCallback uiCallback) {
-        mExecutor.submit(new Callable<Void>() {
-            public Void call() {
-                if (!INITIALIZED) {
-                    Utils.sleep(50);
-                    mExecutor.submit(this);
-                    return null;
-                }
-                final List<Entity> fetched = internalSearch(descPart);
-                Utils.d(LOG_TAG, "query end, fetched list's size: " + (fetched != null? fetched.size(): 0));
-                Communicator.getInstance().postRunnableToUi(new Runnable() {
-                    @Override
-                    public void run() {
-                        uiCallback.dataFetched(fetched);
-                    }
-                });
-                return null;
+    public void search(final String descPart, Action1<List<Entity>> sub) {
+        Observable.create(new Observable.OnSubscribe<List<Entity>>() {
+            @Override
+            public void call(Subscriber<? super List<Entity>> sub) {
+                List<Entity> searchRes = internalSearch(descPart);
+                sub.onNext(searchRes);
+                sub.onCompleted();
             }
-        });
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(sub);
     }
 
-    public void asyncQueryItemInfo(final long id, final IItemInfoQueryCallback uiCallback) {
-        mExecutor.submit(new Callable<Void>() {
-            public Void call() {
-                Utils.d(LOG_TAG, "asyncQueryItemInfo.call, inited=" + INITIALIZED);
-                if (!INITIALIZED) {
-                    Utils.sleep(50);
-                    mExecutor.submit(this);
-                    return null;
-                }
-                final Entity ret = queryEntity(id);
-                if (ret != null) {
-                    Communicator.getInstance().postRunnableToUi(new Runnable() {
-                        @Override
-                        public void run() {
-                            uiCallback.dataFetched(ret);
+    public void queryItemInfo(final long id, Action1<Entity> sub) {
+        Observable.create(new Observable.OnSubscribe<Entity>() {
+            @Override
+            public void call(Subscriber<? super Entity> sub) {
+                Entity info = queryEntity(id);
+                sub.onNext(info);
+                sub.onCompleted();
+            }
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(sub);
+    }
+
+    public void getContainChain(final long id, Subscriber<Entity> sub) {
+        Observable.create(new Observable.OnSubscribe<Entity>() {
+            @Override
+            public void call(Subscriber<? super Entity> sub) {
+                long id_cursor = id;
+                while(true) {
+                    Entity entity = queryEntity(id_cursor);
+                    if (entity != null) {
+                        sub.onNext(entity);
+                        id_cursor = entity.getContainerId();
+                        if (entity.getEntityId() == EntityManager.ROOT_ENTITY_ID) {
+                            break;
                         }
-                    });
+                    } else {
+                        break;
+                    }
                 }
-                return null;
+                sub.onCompleted();
             }
-        });
-    }
-
-    public static interface IDataFetchCallback {
-        public void dataFetched(List<Entity> children);
-    }
-
-    public static interface IItemInfoQueryCallback {
-        public void dataFetched(Entity entity);
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(sub);
     }
 
     public void initIfNecessary() {

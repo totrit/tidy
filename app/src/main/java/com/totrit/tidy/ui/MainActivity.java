@@ -21,6 +21,8 @@ import com.totrit.tidy.core.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import rx.Subscriber;
+
 
 public class MainActivity extends android.support.v7.app.ActionBarActivity {
     private final static String LOG_TAG = "MainActivity";
@@ -180,26 +182,30 @@ public class MainActivity extends android.support.v7.app.ActionBarActivity {
         private void updateChain(long id) {
             chain.clear();
             chainName.clear();
-            EntityManager.getInstance().asyncQueryItemInfo(id, mItemInfoQueryCallback);
-        }
-
-        private EntityManager.IItemInfoQueryCallback mItemInfoQueryCallback = new EntityManager.IItemInfoQueryCallback() {
-            @Override
-            public void dataFetched(Entity entity) {
-                chainName.add(entity.getDescription());
-                chain.add(entity.getEntityId());
-                if (entity.getEntityId() != EntityManager.ROOT_ENTITY_ID &&
-                        !chain.contains(entity.getContainerId())) {
-                    EntityManager.getInstance().asyncQueryItemInfo(entity.getContainerId(), mItemInfoQueryCallback);
-                } else {
+            EntityManager.getInstance().getContainChain(id, new Subscriber<Entity>() {
+                @Override
+                public void onCompleted() {
                     clear();
                     for (String name: chainName) {
-                        add(name);
+                        DropDownContainerChainProcessor.this.add(name);
                     }
                     title.setSelection(0);
+                    DropDownContainerChainProcessor.this.notifyDataSetChanged();
                 }
-            }
-        };
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onNext(Entity entity) {
+                    chainName.add(entity.getDescription());
+                    chain.add(entity.getEntityId());
+                }
+            });
+        }
+
     }
 
 }

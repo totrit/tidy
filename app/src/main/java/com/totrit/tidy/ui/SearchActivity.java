@@ -2,7 +2,6 @@ package com.totrit.tidy.ui;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,15 +15,16 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.totrit.tidy.Constants;
 import com.totrit.tidy.R;
 import com.totrit.tidy.Utils;
 import com.totrit.tidy.core.Entity;
 import com.totrit.tidy.core.EntityManager;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+
+import rx.Subscriber;
+import rx.functions.Action1;
 
 public class SearchActivity extends Activity {
     private final static String LOG_TAG = "SearchActivity";
@@ -60,9 +60,10 @@ public class SearchActivity extends Activity {
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
                 String textAfterChanged = charSequence.toString();
                 Utils.d(LOG_TAG, "onTextChanged, text=" + textAfterChanged);
-                EntityManager.getInstance().asyncSearch(textAfterChanged, new EntityManager.IDataFetchCallback() {
+                EntityManager.getInstance().search(textAfterChanged, new Action1<List<Entity>>() {
+
                     @Override
-                    public void dataFetched(List<Entity> candidates) {
+                    public void call(List<Entity> candidates) {
                         Utils.d(LOG_TAG, "displaying list: " + (candidates != null ? Arrays.toString(candidates.toArray()) : null));
                         if (mAdapter == null) {
                             mAdapter = new SearchListAdapter();

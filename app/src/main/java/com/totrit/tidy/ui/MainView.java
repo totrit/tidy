@@ -1,6 +1,5 @@
 package com.totrit.tidy.ui;
 
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -18,8 +17,15 @@ import com.totrit.tidy.Utils;
 import com.totrit.tidy.core.Communicator;
 import com.totrit.tidy.core.Entity;
 import com.totrit.tidy.core.EntityManager;
+import com.totrit.tidy.core.WorkingThread;
 
 import java.util.List;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by maruilin on 15/4/6.
@@ -72,20 +78,21 @@ public class MainView extends android.support.v4.app.Fragment {
         final long highlight = this.getArguments().getLong("highlight", -1);
         Utils.d(LOG_TAG, "creating new Fragment for entity " + id);
         showProgress(true);
-        EntityManager.getInstance().asyncFetchContained(id, new EntityManager.IDataFetchCallback() {
+        EntityManager.getInstance().getContained(id, new Action1<List<Entity>>() {
+
             @Override
-            public void dataFetched(List<Entity> children) {
+            public void call(List<Entity> children) {
                 Utils.d(LOG_TAG, "dataFetched");
                 mAdapter.setHightlight(highlight);
                 MainView.this.getArguments().putLong("highlight", -1);
                 mAdapter.setData(children);
                 mAdapter.notifyDataSetChanged();
-                showProgress(false);
                 if (children == null || children.size() == 0) {
                     Utils.showToast(R.string.toast_empty_list);
                 } else {
                     Utils.showToast(-1);
                 }
+                showProgress(false);
             }
         });
     }

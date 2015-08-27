@@ -21,6 +21,9 @@ import com.totrit.tidy.core.Entity;
 import com.totrit.tidy.core.EntityManager;
 import com.totrit.tidy.core.WorkingThread;
 
+import rx.Subscriber;
+import rx.functions.Action1;
+
 public class AddItemDialog extends ActionBarActivity {
     private final static String LOG_TAG = "AddItemDialog";
 
@@ -134,9 +137,10 @@ public class AddItemDialog extends ActionBarActivity {
                     entityCreationController.usingExsitedObjectId = result.selectedEntity.getEntityId();
                     entityCreationController.usingExsitedContainerId = result.selectedEntity.getContainerId();
                     mObjectDescEdit.setText(result.selectedEntity.getDescription());
-                    EntityManager.getInstance().asyncQueryItemInfo(result.selectedEntity.getContainerId(), new EntityManager.IItemInfoQueryCallback() {
+                    EntityManager.getInstance().queryItemInfo(result.selectedEntity.getContainerId(), new Action1<Entity>() {
+
                         @Override
-                        public void dataFetched(Entity entity) {
+                        public void call(Entity entity) {
                             if (!TextUtils.isEmpty(entity.getDescription())) {
                                 mContainerDescEdit.setText(entity.getDescription());
                             }
